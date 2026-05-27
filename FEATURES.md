@@ -1,6 +1,227 @@
 # TradeX Pro — Complete Feature Documentation
 
-> A professional-grade trading platform mockup built with .NET 9 ASP.NET Core MVC. 14 pages, 200+ UI features, dark/light themes, premium typography.
+> A professional-grade trading platform built with .NET 9 ASP.NET Core MVC + Web API + MSSQL. Layered architecture, 14 pages, 200+ UI features, dark/light themes, premium typography.
+
+---
+
+## Architecture Overview (DRAFT)
+
+### System Diagram
+
+```
+┌─────────────────────┐       ┌─────────────────────┐       ┌─────────────────────┐
+│                     │       │                     │       │                     │
+│   TradeXPro.Web     │──────▶│   TradeXPro.API     │──────▶│   TradeXPro.Data    │
+│   (MVC Frontend)    │ HTTP  │   (Web API)         │  EF   │   (Database Layer)  │
+│                     │       │                     │ Core  │                     │
+│   - Razor Views     │       │   - API Controllers │       │   - DbContext       │
+│   - CSS/JS          │       │   - DTOs            │       │   - Entities        │
+│   - HttpClient      │       │   - Services        │       │   - Repositories    │
+│   - No DB Access    │       │   - Auth/JWT        │       │   - Migrations      │
+│                     │       │                     │       │                     │
+└─────────────────────┘       └─────────────────────┘       └─────────────────────┘
+                                                                      │
+                                                                      ▼
+                                                            ┌─────────────────────┐
+                                                            │                     │
+                                                            │   MSSQL Server      │
+                                                            │   (Swappable)       │
+                                                            │                     │
+                                                            │   - Can be changed  │
+                                                            │     to PostgreSQL,  │
+                                                            │     MySQL, SQLite   │
+                                                            │     later           │
+                                                            │                     │
+                                                            └─────────────────────┘
+```
+
+### Project Structure
+
+```
+TradeXPro.sln
+│
+├── src/
+│   ├── TradeXPro.Web/              ← MVC Frontend (Port 5108)
+│   │   ├── Controllers/
+│   │   ├── Views/
+│   │   ├── wwwroot/ (css, js)
+│   │   ├── Services/               ← HttpClient services calling API
+│   │   └── Program.cs
+│   │
+│   ├── TradeXPro.API/              ← Web API (Port 5200)
+│   │   ├── Controllers/
+│   │   ├── DTOs/
+│   │   ├── Services/
+│   │   └── Program.cs
+│   │
+│   └── TradeXPro.Data/             ← Data Access Layer (Class Library)
+│       ├── DbContext/
+│       ├── Entities/
+│       ├── Repositories/
+│       │   ├── Interfaces/         ← IRepository<T>, IUserRepository, etc.
+│       │   └── Implementations/    ← MssqlUserRepository, etc.
+│       └── Migrations/
+│
+└── logs/                            ← Text log files (auth logs)
+```
+
+### Key Architecture Rules
+
+| Rule | Description |
+|------|-------------|
+| **No direct DB from Web** | TradeXPro.Web NEVER connects to database directly |
+| **API is the gateway** | All data flows through TradeXPro.API |
+| **Repository Pattern** | Database is abstracted behind interfaces (swap MSSQL → PostgreSQL later) |
+| **Entity Framework Core** | ORM with migrations, supports multiple providers |
+| **DTOs for transfer** | API uses Data Transfer Objects, not raw entities |
+| **HttpClient in Web** | MVC calls API via typed HttpClient services |
+
+### Database Swappability
+
+```csharp
+// In TradeXPro.Data/Program.cs or Startup
+// Current: MSSQL
+services.AddDbContext<TradeXProDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// Future: PostgreSQL (just change this line + NuGet package)
+// services.AddDbContext<TradeXProDbContext>(options =>
+//     options.UseNpgsql(connectionString));
+
+// Future: MySQL
+// services.AddDbContext<TradeXProDbContext>(options =>
+//     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+```
+
+---
+
+## UX Requirements (DRAFT)
+
+### Requirement 1: Login/Logout Logging
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  File: logs/auth_2025-05-27.log                             │
+├─────────────────────────────────────────────────────────────┤
+│  2025-05-27 09:15:32 | LOGIN  | john.doe@email.com | 192.168.1.1 | Success  │
+│  2025-05-27 09:45:10 | LOGOUT | john.doe@email.com | 192.168.1.1 | Success  │
+│  2025-05-27 10:02:44 | LOGIN  | jane@email.com    | 10.0.0.5    | Failed   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- Log written on every login attempt (success/fail) and logout
+- Daily rotating log files: `auth_YYYY-MM-DD.log`
+- Fields: Timestamp, Action, Email, IP Address, Result
+- Stored in `/logs/` directory
+
+---
+
+### Requirement 2: Save Button Spinner + Prevent Double-Click
+
+```
+Before Click:            During Save:              After Success:
+┌──────────────┐        ┌──────────────────┐      ┌──────────────┐
+│  Save Changes │   →   │  ⟳ Saving...     │  →   │  Save Changes │
+└──────────────┘        └──────────────────┘      └──────────────┘
+     (enabled)             (disabled, spinner)         (re-enabled)
+```
+
+**Behavior:**
+- On click: Button becomes disabled immediately
+- Spinner icon replaces text (or prepends)
+- Text changes to "Saving..." / "Processing..."
+- Button stays disabled until API response
+- On success: Re-enable button, show toast
+- On error: Re-enable button, show error toast
+
+**CSS Class:** `.btn-saving` (adds spinner, disables pointer-events)
+
+---
+
+### Requirement 3: Success Toast Notification
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    MAIN APP CONTENT                   │
+│                                                      │
+│                                                      │
+│                                                      │
+│                                                      │
+│                                                      │
+│                                                      │
+│  ┌─────────────────────────────┐                    │
+│  │ ✓  Changes saved            │ ← appears here     │
+│  │    successfully!            │   (bottom-left)     │
+│  └─────────────────────────────┘                    │
+└─────────────────────────────────────────────────────┘
+
+Timeline:
+0s ──── Slide up from bottom-left (fade in)
+5s ──── Auto-dismiss (fade out to bottom-left)
+    OR
+Click X ── Dismiss immediately
+```
+
+**Behavior:**
+- Position: Fixed, bottom-left corner (24px from edge)
+- Animation IN: Slide up + fade in (0.3s ease)
+- Animation OUT: Slide down + fade out (0.3s ease)
+- Auto-close: 5 seconds
+- Dismissable: Click X button to close early
+- Stackable: Multiple toasts stack vertically
+- Types: Success (green), Error (red), Warning (yellow), Info (blue)
+
+---
+
+### Requirement 4: Delete Confirmation Modal
+
+```
+┌─────────────────────────────────────────────────────┐
+│                                                      │
+│          ┌─────────────────────────────┐            │
+│          │                             │            │
+│          │   ⚠️  Delete Confirmation   │            │
+│          │                             │            │
+│          │   Are you sure you want to  │            │
+│          │   delete this item?         │            │
+│          │                             │            │
+│          │   This action cannot be     │            │
+│          │   undone.                   │            │
+│          │                             │            │
+│          │   ┌────────┐ ┌──────────┐  │            │
+│          │   │ Cancel │ │  Delete  │  │            │
+│          │   └────────┘ └──────────┘  │            │
+│          │                             │            │
+│          └─────────────────────────────┘            │
+│                                                      │
+└─────────────────────────────────────────────────────┘
+         (backdrop overlay dims background)
+```
+
+**Behavior:**
+- Centered modal with dark backdrop overlay
+- Title: "Delete Confirmation" with warning icon
+- Message: Customizable per context (e.g., "Delete alert for AAPL?")
+- Cancel button: Secondary style, closes modal
+- Delete button: Red danger style, executes deletion
+- Backdrop click: Closes modal (same as Cancel)
+- ESC key: Closes modal
+- After delete: Show success toast + remove item from UI
+
+---
+
+## Implementation Status
+
+| # | Requirement | Status |
+|---|-------------|--------|
+| 1 | Layered Architecture (Web → API → DB) | 🔲 Pending |
+| 2 | MSSQL with swappable provider | 🔲 Pending |
+| 3 | Login/Logout text file logging | 🔲 Pending |
+| 4 | Save button spinner + double-click prevention | 🔲 Pending |
+| 5 | Success toast (bottom-left, 5s auto-close) | 🔲 Pending |
+| 6 | Delete confirmation modal | 🔲 Pending |
+
+---
 
 ---
 
