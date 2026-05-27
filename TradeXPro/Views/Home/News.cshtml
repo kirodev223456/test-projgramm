@@ -1,0 +1,133 @@
+@model NewsViewModel
+@{
+    ViewData["Title"] = "News";
+    ViewData["ActivePage"] = "News";
+}
+
+<!-- News Main -->
+<div class="panel news-main">
+    <!-- Trending Topics -->
+    <div class="trending-bar">
+        <span class="trending-label">Trending:</span>
+        @foreach (var topic in Model.TrendingTopics)
+        {
+            <span class="trending-tag">@topic</span>
+        }
+    </div>
+
+    <!-- News Feed -->
+    <div class="panel-header">
+        <span class="panel-title">Latest News</span>
+        <div class="news-filters">
+            <button class="news-filter-btn active">All</button>
+            <button class="news-filter-btn">Earnings</button>
+            <button class="news-filter-btn">Economy</button>
+            <button class="news-filter-btn">Technology</button>
+            <button class="news-filter-btn">Crypto</button>
+        </div>
+    </div>
+
+    <div class="news-feed">
+        @foreach (var article in Model.LatestNews)
+        {
+            var sentimentCls = article.Sentiment == "Bullish" ? "sentiment-bullish" :
+                               article.Sentiment == "Bearish" ? "sentiment-bearish" : "sentiment-neutral";
+            var timeAgo = (DateTime.Now - article.PublishedAt).TotalMinutes;
+            string timeStr;
+            if (timeAgo < 60) { timeStr = $"{(int)timeAgo}m ago"; }
+            else if (timeAgo < 1440) { timeStr = $"{(int)(timeAgo / 60)}h ago"; }
+            else { timeStr = $"{(int)(timeAgo / 1440)}d ago"; }
+
+            <div class="news-article">
+                <div class="news-article-content">
+                    <div class="news-article-header">
+                        <span class="news-source">@article.Source</span>
+                        <span class="news-time">@timeStr</span>
+                        <span class="news-sentiment @sentimentCls">@article.Sentiment</span>
+                    </div>
+                    <h4 class="news-title">@article.Title</h4>
+                    <p class="news-summary">@article.Summary</p>
+                    <div class="news-meta">
+                        <span class="news-category">@article.Category</span>
+                        <div class="news-symbols">
+                            @foreach (var symbol in article.RelatedSymbols)
+                            {
+                                <span class="news-symbol-tag">@symbol</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- News Sidebar: Earnings Calendar + Watchlist News -->
+<div class="panel news-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Earnings Calendar</span>
+    </div>
+
+    <div class="earnings-list">
+        @foreach (var earning in Model.UpcomingEarnings)
+        {
+            var daysUntil = (earning.Date - DateTime.Now).Days;
+            string dateLabel = daysUntil == 0 ? "Today" : daysUntil == 1 ? "Tomorrow" : earning.Date.ToString("MMM dd");
+            <div class="earnings-item">
+                <div class="earnings-left">
+                    <strong>@earning.Symbol</strong>
+                    <div class="wl-name">@earning.CompanyName</div>
+                </div>
+                <div class="earnings-right">
+                    <div class="earnings-date">@dateLabel</div>
+                    <div class="earnings-time">@earning.Time</div>
+                    @if (earning.EstEPS.HasValue)
+                    {
+                        <div class="earnings-est">Est: $@earning.EstEPS.Value.ToString("N2")</div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Market Sentiment</div>
+        <div class="sentiment-meter">
+            <div class="sentiment-bar">
+                <div class="sentiment-fill-bullish" style="width:68%;"></div>
+            </div>
+            <div class="sentiment-labels">
+                <span class="text-red">Bearish 32%</span>
+                <span class="text-green">Bullish 68%</span>
+            </div>
+        </div>
+
+        <div class="order-summary" style="margin-top:16px;">
+            <div class="order-summary-row"><span>Fear & Greed Index</span><span style="color:var(--green);">72 (Greed)</span></div>
+            <div class="order-summary-row"><span>Put/Call Ratio</span><span>0.68</span></div>
+            <div class="order-summary-row"><span>VIX</span><span>14.82</span></div>
+            <div class="order-summary-row"><span>Advance/Decline</span><span class="text-green">1.59</span></div>
+        </div>
+    </div>
+
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Economic Calendar</div>
+        <div class="econ-events">
+            <div class="econ-event">
+                <div class="econ-event-time">Today 14:00</div>
+                <div class="econ-event-name">FOMC Meeting Minutes</div>
+                <div class="econ-event-impact impact-high">High Impact</div>
+            </div>
+            <div class="econ-event">
+                <div class="econ-event-time">Tomorrow 08:30</div>
+                <div class="econ-event-name">Initial Jobless Claims</div>
+                <div class="econ-event-impact impact-medium">Medium Impact</div>
+            </div>
+            <div class="econ-event">
+                <div class="econ-event-time">Fri 08:30</div>
+                <div class="econ-event-name">PCE Price Index</div>
+                <div class="econ-event-impact impact-high">High Impact</div>
+            </div>
+        </div>
+    </div>
+</div>

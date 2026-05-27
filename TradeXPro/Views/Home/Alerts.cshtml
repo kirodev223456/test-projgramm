@@ -1,0 +1,211 @@
+@model AlertsViewModel
+@{
+    ViewData["Title"] = "Alerts";
+    ViewData["ActivePage"] = "Alerts";
+}
+
+<!-- Alerts Main -->
+<div class="panel alerts-main">
+    <!-- Stats Cards -->
+    <div class="portfolio-cards">
+        <div class="stat-card">
+            <div class="stat-label">Active Alerts</div>
+            <div class="stat-value">@Model.TotalActive</div>
+            <div class="stat-change" style="color:var(--text-secondary);">of @Model.MaxAlerts maximum</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Triggered Today</div>
+            <div class="stat-value text-green">@Model.TriggeredToday</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Notifications sent</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Remaining Slots</div>
+            <div class="stat-value">@(Model.MaxAlerts - Model.TotalActive)</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Available to create</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-row">
+        <button class="active" onclick="showAlertTab('active')">Active (@Model.ActiveAlerts.Count)</button>
+        <button onclick="showAlertTab('triggered')">Triggered (@Model.TriggeredAlerts.Count)</button>
+    </div>
+
+    <!-- Active Alerts -->
+    <div id="alert-active" class="alert-tab-content">
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Condition</th>
+                    <th>Target</th>
+                    <th>Current</th>
+                    <th>Distance</th>
+                    <th>Notify</th>
+                    <th>Created</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var alert in Model.ActiveAlerts)
+                {
+                    decimal distance = 0;
+                    string distanceStr = "";
+                    if (alert.Condition.Contains("Above"))
+                    {
+                        distance = ((alert.TargetPrice - alert.CurrentPrice) / alert.CurrentPrice) * 100;
+                        distanceStr = $"+{distance:N2}% away";
+                    }
+                    else if (alert.Condition.Contains("Below"))
+                    {
+                        distance = ((alert.CurrentPrice - alert.TargetPrice) / alert.CurrentPrice) * 100;
+                        distanceStr = $"-{distance:N2}% away";
+                    }
+                    else
+                    {
+                        distanceStr = "Monitoring";
+                    }
+                    <tr>
+                        <td>
+                            <strong>@alert.Symbol</strong>
+                            <div class="wl-name">@alert.CompanyName</div>
+                        </td>
+                        <td><span class="alert-condition">@alert.Condition</span></td>
+                        <td><strong>$@alert.TargetPrice.ToString("N2")</strong></td>
+                        <td>$@alert.CurrentPrice.ToString("N2")</td>
+                        <td style="color:var(--text-secondary)">@distanceStr</td>
+                        <td><span class="alert-notify">@alert.NotifyVia</span></td>
+                        <td style="color:var(--text-secondary)">@alert.Created.ToString("MMM dd")</td>
+                        <td style="color:var(--text-secondary); max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">@(string.IsNullOrEmpty(alert.Notes) ? "—" : alert.Notes)</td>
+                        <td>
+                            <div class="alert-actions">
+                                <button class="btn-icon" title="Edit">&#9998;</button>
+                                <button class="btn-icon btn-icon-danger" title="Delete">&#10005;</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Triggered Alerts -->
+    <div id="alert-triggered" class="alert-tab-content" style="display:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Condition</th>
+                    <th>Target</th>
+                    <th>Triggered Price</th>
+                    <th>Triggered At</th>
+                    <th>Notify</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var alert in Model.TriggeredAlerts)
+                {
+                    <tr>
+                        <td>
+                            <strong>@alert.Symbol</strong>
+                            <div class="wl-name">@alert.CompanyName</div>
+                        </td>
+                        <td><span class="alert-condition">@alert.Condition</span></td>
+                        <td><strong>$@alert.TargetPrice.ToString("N2")</strong></td>
+                        <td class="text-green">$@alert.CurrentPrice.ToString("N2")</td>
+                        <td style="color:var(--text-secondary)">@alert.TriggeredAt?.ToString("MMM dd, HH:mm")</td>
+                        <td><span class="alert-notify">@alert.NotifyVia</span></td>
+                        <td style="color:var(--text-secondary)">@(string.IsNullOrEmpty(alert.Notes) ? "—" : alert.Notes)</td>
+                        <td>
+                            <div class="alert-actions">
+                                <button class="btn-sm btn-secondary">Re-create</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Alert Sidebar -->
+<div class="panel alerts-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Create Alert</span>
+    </div>
+
+    <div class="form-group">
+        <label>Symbol</label>
+        <input type="text" placeholder="e.g. AAPL" />
+    </div>
+    <div class="form-group">
+        <label>Condition</label>
+        <select>
+            <option>Price Above</option>
+            <option>Price Below</option>
+            <option>% Change Greater Than</option>
+            <option>% Change Less Than</option>
+            <option>Volume Above</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Target Value</label>
+        <input type="number" placeholder="0.00" />
+    </div>
+    <div class="form-group">
+        <label>Notify Via</label>
+        <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" checked /> Email</label>
+            <label class="checkbox-item"><input type="checkbox" checked /> Push</label>
+            <label class="checkbox-item"><input type="checkbox" /> SMS</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Expiration</label>
+        <select>
+            <option>Never</option>
+            <option>1 Day</option>
+            <option>1 Week</option>
+            <option>1 Month</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Notes (optional)</label>
+        <input type="text" placeholder="Add a note..." />
+    </div>
+    <button class="btn-order" style="margin-top:12px;">Create Alert</button>
+
+    <!-- Alert Tips -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Alert Tips</div>
+        <div class="alert-tips">
+            <div class="alert-tip-item">
+                <span class="tip-icon">&#9888;</span>
+                <span>Set alerts near key support/resistance levels</span>
+            </div>
+            <div class="alert-tip-item">
+                <span class="tip-icon">&#128200;</span>
+                <span>Use % change alerts for volatility monitoring</span>
+            </div>
+            <div class="alert-tip-item">
+                <span class="tip-icon">&#128276;</span>
+                <span>Enable multiple channels for critical alerts</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function showAlertTab(tab) {
+    document.querySelectorAll('.alert-tab-content').forEach(el => el.style.display = 'none');
+    document.getElementById('alert-' + tab).style.display = 'block';
+    const btns = document.querySelectorAll('.alerts-main .tab-row button');
+    btns.forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+</script>
+}

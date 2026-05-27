@@ -1,0 +1,185 @@
+@model ScreenerViewModel
+@{
+    ViewData["Title"] = "Screener";
+    ViewData["ActivePage"] = "Screener";
+}
+
+<!-- Screener Main -->
+<div class="panel screener-main">
+    <!-- Filters Bar -->
+    <div class="screener-filters">
+        <div class="filter-group">
+            <label>Sector</label>
+            <select>
+                <option>All Sectors</option>
+                <option>Technology</option>
+                <option>Healthcare</option>
+                <option>Financial</option>
+                <option>Consumer Disc.</option>
+                <option>Energy</option>
+                <option>Communication</option>
+                <option>Industrials</option>
+                <option>Utilities</option>
+                <option>Real Estate</option>
+                <option>Materials</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Market Cap</label>
+            <select>
+                <option>All</option>
+                <option>Mega ($200B+)</option>
+                <option>Large ($10-200B)</option>
+                <option>Mid ($2-10B)</option>
+                <option>Small ($300M-2B)</option>
+                <option>Micro (&lt;$300M)</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Price Range</label>
+            <div class="filter-range">
+                <input type="number" placeholder="Min" class="range-input" />
+                <span>-</span>
+                <input type="number" placeholder="Max" class="range-input" />
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>P/E Ratio</label>
+            <div class="filter-range">
+                <input type="number" placeholder="Min" class="range-input" />
+                <span>-</span>
+                <input type="number" placeholder="Max" class="range-input" />
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>Dividend Yield</label>
+            <select>
+                <option>Any</option>
+                <option>> 1%</option>
+                <option>> 2%</option>
+                <option>> 3%</option>
+                <option>> 5%</option>
+            </select>
+        </div>
+        <div class="filter-group filter-actions-group">
+            <button class="btn-primary">Screen</button>
+            <button class="btn-secondary">Reset</button>
+        </div>
+    </div>
+
+    <!-- Results Header -->
+    <div class="panel-header">
+        <span class="panel-title">Results (@Model.TotalResults stocks)</span>
+        <div class="screener-sort">
+            <label style="font-size:12px; color:var(--text-secondary); margin-right:6px;">Sort by:</label>
+            <select style="padding:5px 8px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:4px; color:var(--text-primary); font-size:12px;">
+                <option>Market Cap</option>
+                <option>Price</option>
+                <option>% Change</option>
+                <option>Volume</option>
+                <option>P/E Ratio</option>
+                <option>Dividend Yield</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Company</th>
+                <th>Sector</th>
+                <th>Price</th>
+                <th>Change</th>
+                <th>Volume</th>
+                <th>Mkt Cap</th>
+                <th>P/E</th>
+                <th>Div Yield</th>
+                <th>52W Range</th>
+                <th>Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stock in Model.Results)
+            {
+                var changeCls = stock.Change >= 0 ? "text-green" : "text-red";
+                var changeSign = stock.Change >= 0 ? "+" : "";
+                var ratingCls = stock.Rating == "Strong Buy" ? "rating-strong-buy" :
+                                stock.Rating == "Buy" ? "rating-buy" :
+                                stock.Rating == "Hold" ? "rating-hold" : "rating-sell";
+                // 52-week progress
+                var range = stock.Week52High - stock.Week52Low;
+                var progress = range > 0 ? (double)((stock.Price - stock.Week52Low) / range) * 100 : 50;
+                <tr>
+                    <td><strong>@stock.Symbol</strong></td>
+                    <td style="color:var(--text-secondary)">@stock.CompanyName</td>
+                    <td style="font-size:12px;">@stock.Sector</td>
+                    <td><strong>$@stock.Price.ToString("N2")</strong></td>
+                    <td class="@changeCls">@(changeSign)@stock.ChangePercent.ToString("N2")%</td>
+                    <td>@stock.Volume</td>
+                    <td>@stock.MarketCap</td>
+                    <td>@stock.PERatio.ToString("N1")</td>
+                    <td>@(stock.DividendYield.HasValue ? stock.DividendYield.Value.ToString("N2") + "%" : "—")</td>
+                    <td>
+                        <div class="range-52w">
+                            <div class="range-bar-52w">
+                                <div class="range-marker" style="left:@progress.ToString("N0")%;"></div>
+                            </div>
+                            <div class="range-labels">
+                                <span>$@stock.Week52Low.ToString("N0")</span>
+                                <span>$@stock.Week52High.ToString("N0")</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="rating-badge @ratingCls">@stock.Rating</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Screener Sidebar -->
+<div class="panel screener-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Saved Screens</span>
+    </div>
+
+    @foreach (var screen in Model.SavedScreens)
+    {
+        <div class="saved-screen-item">
+            <div class="saved-screen-info">
+                <div class="saved-screen-name">@screen.Name</div>
+                <div class="saved-screen-meta">@screen.ResultCount results &middot; @screen.LastRun.ToString("MMM dd")</div>
+            </div>
+            <button class="btn-icon" title="Run">&#9654;</button>
+        </div>
+    }
+
+    <button class="btn-secondary" style="width:100%; margin-top:12px;">+ Save Current Screen</button>
+
+    <!-- Popular Screens -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Popular Screens</div>
+        <div class="settings-links">
+            <a href="#" class="settings-link">S&P 500 Oversold (RSI &lt; 30)</a>
+            <a href="#" class="settings-link">High Growth Tech Stocks</a>
+            <a href="#" class="settings-link">Dividend Aristocrats</a>
+            <a href="#" class="settings-link">Small Cap Value</a>
+            <a href="#" class="settings-link">Stocks Near 52W High</a>
+            <a href="#" class="settings-link">High Short Interest</a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Market Breadth</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Above 50-DMA</span><span class="text-green">62%</span></div>
+            <div class="order-summary-row"><span>Above 200-DMA</span><span class="text-green">58%</span></div>
+            <div class="order-summary-row"><span>New 52W Highs</span><span>87</span></div>
+            <div class="order-summary-row"><span>New 52W Lows</span><span>24</span></div>
+            <div class="order-summary-row"><span>Avg P/E (S&P)</span><span>24.8</span></div>
+        </div>
+    </div>
+</div>

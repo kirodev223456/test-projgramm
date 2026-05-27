@@ -1,0 +1,354 @@
+@model SettingsViewModel
+@{
+    ViewData["Title"] = "Settings";
+    ViewData["ActivePage"] = "Settings";
+}
+
+<!-- Settings Main -->
+<div class="panel settings-main">
+    <!-- Settings Tabs -->
+    <div class="tab-row">
+        <button class="active" onclick="showSettingsTab('profile')">Profile</button>
+        <button onclick="showSettingsTab('security')">Security</button>
+        <button onclick="showSettingsTab('notifications')">Notifications</button>
+        <button onclick="showSettingsTab('apikeys')">API Keys</button>
+        <button onclick="showSettingsTab('display')">Display</button>
+    </div>
+
+    <!-- Profile Tab -->
+    <div id="settings-profile" class="settings-tab-content">
+        <div class="settings-section">
+            <h3 class="settings-section-title">Personal Information</h3>
+            <div class="settings-form-grid">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" value="@Model.Profile.FullName" />
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" value="@Model.Profile.Email" />
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" value="@Model.Profile.Phone" />
+                </div>
+                <div class="form-group">
+                    <label>Timezone</label>
+                    <select>
+                        <option selected>@Model.Profile.Timezone</option>
+                        <option>Pacific Time (UTC-8)</option>
+                        <option>Central Time (UTC-6)</option>
+                        <option>Mountain Time (UTC-7)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Base Currency</label>
+                    <select>
+                        <option selected>@Model.Profile.Currency</option>
+                        <option>EUR</option>
+                        <option>GBP</option>
+                        <option>JPY</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Account Type</label>
+                    <input type="text" value="@Model.Profile.AccountType" disabled />
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button class="btn-primary">Save Changes</button>
+                <button class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Tab -->
+    <div id="settings-security" class="settings-tab-content" style="display:none;">
+        <div class="settings-section">
+            <h3 class="settings-section-title">Password</h3>
+            <div class="settings-form-grid">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" placeholder="Enter current password" />
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" placeholder="Enter new password" />
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" placeholder="Confirm new password" />
+                </div>
+            </div>
+            <p class="settings-note">Last changed: @Model.Security.LastPasswordChange.ToString("MMM dd, yyyy")</p>
+            <div class="settings-actions">
+                <button class="btn-primary">Update Password</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3 class="settings-section-title">Two-Factor Authentication</h3>
+            <div class="settings-toggle-row">
+                <div>
+                    <div class="toggle-label">2FA Enabled</div>
+                    <div class="toggle-description">Method: @Model.Security.TwoFactorMethod</div>
+                </div>
+                <div class="toggle-switch @(Model.Security.TwoFactorEnabled ? "active" : "")">
+                    <div class="toggle-knob"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3 class="settings-section-title">Active Sessions</h3>
+            <table>
+                <thead>
+                    <tr><th>Device</th><th>Location</th><th>IP Address</th><th>Last Active</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var session in Model.Security.ActiveSessions)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@session.Device</strong>
+                                @if (session.IsCurrent)
+                                {
+                                    <span class="badge-current">Current</span>
+                                }
+                            </td>
+                            <td>@session.Location</td>
+                            <td style="color:var(--text-secondary)">@session.IpAddress</td>
+                            <td style="color:var(--text-secondary)">@session.LastActive.ToString("MMM dd, HH:mm")</td>
+                            <td>
+                                @if (!session.IsCurrent)
+                                {
+                                    <button class="btn-danger-sm">Revoke</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Notifications Tab -->
+    <div id="settings-notifications" class="settings-tab-content" style="display:none;">
+        <div class="settings-section">
+            <h3 class="settings-section-title">Notification Channels</h3>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Email Alerts</div><div class="toggle-description">Receive alerts via email</div></div>
+                <div class="toggle-switch @(Model.Notifications.EmailAlerts ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Push Notifications</div><div class="toggle-description">Browser and mobile push</div></div>
+                <div class="toggle-switch @(Model.Notifications.PushNotifications ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">SMS Alerts</div><div class="toggle-description">Text message notifications</div></div>
+                <div class="toggle-switch @(Model.Notifications.SmsAlerts ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3 class="settings-section-title">Alert Types</h3>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Price Alerts</div><div class="toggle-description">When target prices are hit</div></div>
+                <div class="toggle-switch @(Model.Notifications.PriceAlerts ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Order Fills</div><div class="toggle-description">When orders are executed</div></div>
+                <div class="toggle-switch @(Model.Notifications.OrderFills ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Market News</div><div class="toggle-description">Breaking market news</div></div>
+                <div class="toggle-switch @(Model.Notifications.MarketNews ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Earnings Reports</div><div class="toggle-description">Earnings for watchlist stocks</div></div>
+                <div class="toggle-switch @(Model.Notifications.EarningsReports ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Portfolio Summary</div><div class="toggle-description">@Model.Notifications.SummaryFrequency summary report</div></div>
+                <div class="toggle-switch @(Model.Notifications.PortfolioSummary ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Keys Tab -->
+    <div id="settings-apikeys" class="settings-tab-content" style="display:none;">
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <h3 class="settings-section-title">API Keys</h3>
+                <button class="btn-primary">+ New Key</button>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Name</th><th>Key</th><th>Permissions</th><th>Created</th><th>Last Used</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var key in Model.ApiKeys)
+                    {
+                        <tr>
+                            <td><strong>@key.Name</strong></td>
+                            <td><code class="key-code">@key.KeyPrefix</code></td>
+                            <td>@key.Permissions</td>
+                            <td style="color:var(--text-secondary)">@key.Created.ToString("MMM dd, yyyy")</td>
+                            <td style="color:var(--text-secondary)">@(key.LastUsed?.ToString("MMM dd, yyyy") ?? "Never")</td>
+                            <td>
+                                <span class="status-badge @(key.IsActive ? "status-filled" : "status-cancelled")">
+                                    @(key.IsActive ? "Active" : "Disabled")
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-danger-sm">Revoke</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="settings-section">
+            <h3 class="settings-section-title">API Documentation</h3>
+            <div class="api-info-box">
+                <p>Use API keys to access TradeX Pro programmatically. Rate limit: 120 requests/minute.</p>
+                <p style="margin-top:8px;">Base URL: <code class="key-code">https://api.tradexpro.com/v2</code></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display Tab -->
+    <div id="settings-display" class="settings-tab-content" style="display:none;">
+        <div class="settings-section">
+            <h3 class="settings-section-title">Appearance</h3>
+            <div class="settings-form-grid">
+                <div class="form-group">
+                    <label>Theme</label>
+                    <select>
+                        <option selected>@Model.Display.Theme</option>
+                        <option>Light</option>
+                        <option>System</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Language</label>
+                    <select>
+                        <option selected>@Model.Display.Language</option>
+                        <option>Spanish</option>
+                        <option>French</option>
+                        <option>German</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3 class="settings-section-title">Chart Preferences</h3>
+            <div class="settings-form-grid">
+                <div class="form-group">
+                    <label>Default Chart Type</label>
+                    <select>
+                        <option selected>@Model.Display.ChartType</option>
+                        <option>Line</option>
+                        <option>Area</option>
+                        <option>Bar</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Default Timeframe</label>
+                    <select>
+                        <option selected>@Model.Display.DefaultTimeframe</option>
+                        <option>1m</option>
+                        <option>5m</option>
+                        <option>15m</option>
+                        <option>4H</option>
+                        <option>1D</option>
+                    </select>
+                </div>
+            </div>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Show Volume</div><div class="toggle-description">Display volume bars on chart</div></div>
+                <div class="toggle-switch @(Model.Display.ShowVolume ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+                <div><div class="toggle-label">Show Grid Lines</div><div class="toggle-description">Display grid on chart background</div></div>
+                <div class="toggle-switch @(Model.Display.ShowGrid ? "active" : "")"><div class="toggle-knob"></div></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3 class="settings-section-title">Formatting</h3>
+            <div class="settings-form-grid">
+                <div class="form-group">
+                    <label>Date Format</label>
+                    <select>
+                        <option selected>@Model.Display.DateFormat</option>
+                        <option>dd/MM/yyyy</option>
+                        <option>yyyy-MM-dd</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Number Format</label>
+                    <select>
+                        <option selected>@Model.Display.NumberFormat</option>
+                        <option>1.234,56</option>
+                        <option>1 234.56</option>
+                    </select>
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button class="btn-primary">Save Preferences</button>
+                <button class="btn-secondary">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Sidebar -->
+<div class="panel settings-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Account Info</span>
+    </div>
+
+    <div class="settings-profile-card">
+        <div class="profile-avatar-lg">JD</div>
+        <div class="profile-name">@Model.Profile.FullName</div>
+        <div class="profile-email">@Model.Profile.Email</div>
+        <div class="profile-badge">@Model.Profile.AccountType</div>
+    </div>
+
+    <div class="order-summary">
+        <div class="order-summary-row"><span>Member Since</span><span>@Model.Profile.MemberSince.ToString("MMM yyyy")</span></div>
+        <div class="order-summary-row"><span>Account Type</span><span>@Model.Profile.AccountType</span></div>
+        <div class="order-summary-row"><span>2FA Status</span><span class="@(Model.Security.TwoFactorEnabled ? "text-green" : "text-red")">@(Model.Security.TwoFactorEnabled ? "Enabled" : "Disabled")</span></div>
+        <div class="order-summary-row"><span>API Keys</span><span>@Model.ApiKeys.Count(k => k.IsActive) active</span></div>
+        <div class="order-summary-row"><span>Sessions</span><span>@Model.Security.ActiveSessions.Count devices</span></div>
+    </div>
+
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Quick Links</div>
+        <div class="settings-links">
+            <a href="#" class="settings-link">Download Statements</a>
+            <a href="#" class="settings-link">Tax Documents</a>
+            <a href="#" class="settings-link">Help Center</a>
+            <a href="#" class="settings-link">Contact Support</a>
+        </div>
+    </div>
+
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <button class="btn-danger" style="width:100%;">Delete Account</button>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function showSettingsTab(tab) {
+    document.querySelectorAll('.settings-tab-content').forEach(el => el.style.display = 'none');
+    document.getElementById('settings-' + tab).style.display = 'block';
+    const btns = document.querySelectorAll('.settings-main .tab-row button');
+    btns.forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+</script>
+}

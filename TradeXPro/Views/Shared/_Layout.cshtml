@@ -17,12 +17,22 @@
                     <a asp-controller="Home" asp-action="Index" class="@(ViewData["ActivePage"] == null ? "active" : "")">Dashboard</a>
                     <a asp-controller="Home" asp-action="Markets" class="@(ViewData["ActivePage"]?.ToString() == "Markets" ? "active" : "")">Markets</a>
                     <a asp-controller="Home" asp-action="Portfolio" class="@(ViewData["ActivePage"]?.ToString() == "Portfolio" ? "active" : "")">Portfolio</a>
+                    <a asp-controller="Home" asp-action="Orders" class="@(ViewData["ActivePage"]?.ToString() == "Orders" ? "active" : "")">Orders</a>
                     <a asp-controller="Home" asp-action="History" class="@(ViewData["ActivePage"]?.ToString() == "History" ? "active" : "")">History</a>
+                    <a asp-controller="Home" asp-action="Screener" class="@(ViewData["ActivePage"]?.ToString() == "Screener" ? "active" : "")">Screener</a>
+                    <a asp-controller="Home" asp-action="News" class="@(ViewData["ActivePage"]?.ToString() == "News" ? "active" : "")">News</a>
+                    <a asp-controller="Home" asp-action="Alerts" class="@(ViewData["ActivePage"]?.ToString() == "Alerts" ? "active" : "")">Alerts</a>
                     <a asp-controller="Home" asp-action="Analytics" class="@(ViewData["ActivePage"]?.ToString() == "Analytics" ? "active" : "")">Analytics</a>
                 </nav>
             </div>
             <div class="header-right">
                 <div class="balance" id="accountBalance">$124,563.82</div>
+                <a asp-controller="Home" asp-action="Account" class="header-icon-link" title="Account">
+                    <div class="header-icon">&#9733;</div>
+                </a>
+                <a asp-controller="Home" asp-action="Settings" class="header-icon-link" title="Settings">
+                    <div class="header-icon">&#9881;</div>
+                </a>
                 <div class="avatar">JD</div>
             </div>
         </header>

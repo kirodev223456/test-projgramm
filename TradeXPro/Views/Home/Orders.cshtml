@@ -1,0 +1,228 @@
+@model OrdersViewModel
+@{
+    ViewData["Title"] = "Orders";
+    ViewData["ActivePage"] = "Orders";
+}
+
+<!-- Orders Main -->
+<div class="panel orders-main">
+    <!-- Summary Stats -->
+    <div class="portfolio-cards">
+        <div class="stat-card">
+            <div class="stat-label">Open Orders</div>
+            <div class="stat-value">@Model.TotalOpen</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Pending execution</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Filled Today</div>
+            <div class="stat-value text-green">@Model.FilledToday</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Orders completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Today's Volume</div>
+            <div class="stat-value">$@Model.TotalVolume.ToString("N0")</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Total traded</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-row">
+        <button class="active" onclick="showOrderTab('open')">Open (@Model.OpenOrders.Count)</button>
+        <button onclick="showOrderTab('pending')">Partial (@Model.PendingOrders.Count)</button>
+        <button onclick="showOrderTab('completed')">Filled (@Model.CompletedOrders.Count)</button>
+        <button onclick="showOrderTab('cancelled')">Cancelled (@Model.CancelledOrders.Count)</button>
+    </div>
+
+    <!-- Open Orders -->
+    <div id="order-open" class="order-tab-content">
+        <table>
+            <thead>
+                <tr><th>Order ID</th><th>Symbol</th><th>Side</th><th>Type</th><th>Qty</th><th>Limit/Stop</th><th>TIF</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.OpenOrders)
+                {
+                    var sideCls = order.Side == "Buy" ? "trade-buy" : "trade-sell";
+                    <tr>
+                        <td style="color:var(--text-secondary); font-family:monospace; font-size:12px;">@order.OrderId</td>
+                        <td><strong>@order.Symbol</strong></td>
+                        <td><span class="trade-badge @sideCls">@order.Side</span></td>
+                        <td>@order.OrderType</td>
+                        <td>@order.Quantity</td>
+                        <td>
+                            @if (order.LimitPrice.HasValue)
+                            {
+                                <span>Lmt: $@order.LimitPrice.Value.ToString("N2")</span>
+                            }
+                            @if (order.StopPrice.HasValue)
+                            {
+                                <span style="margin-left:4px;">Stp: $@order.StopPrice.Value.ToString("N2")</span>
+                            }
+                        </td>
+                        <td><span class="order-tif">@order.TimeInForce</span></td>
+                        <td style="color:var(--text-secondary)">@order.CreatedAt.ToString("HH:mm")</td>
+                        <td>
+                            <div class="alert-actions">
+                                <button class="btn-sm btn-secondary">Modify</button>
+                                <button class="btn-sm btn-danger-sm">Cancel</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Partial Orders -->
+    <div id="order-pending" class="order-tab-content" style="display:none;">
+        <table>
+            <thead>
+                <tr><th>Order ID</th><th>Symbol</th><th>Side</th><th>Type</th><th>Filled/Total</th><th>Avg Fill</th><th>TIF</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.PendingOrders)
+                {
+                    var sideCls = order.Side == "Buy" ? "trade-buy" : "trade-sell";
+                    <tr>
+                        <td style="color:var(--text-secondary); font-family:monospace; font-size:12px;">@order.OrderId</td>
+                        <td><strong>@order.Symbol</strong></td>
+                        <td><span class="trade-badge @sideCls">@order.Side</span></td>
+                        <td>@order.OrderType</td>
+                        <td>
+                            <span class="text-green">@order.FilledQty</span> / @order.Quantity
+                            <div class="fill-progress"><div class="fill-bar" style="width:@(((double)order.FilledQty / order.Quantity) * 100)%;"></div></div>
+                        </td>
+                        <td>$@(order.AvgFillPrice?.ToString("N2") ?? "—")</td>
+                        <td><span class="order-tif">@order.TimeInForce</span></td>
+                        <td style="color:var(--text-secondary)">@order.CreatedAt.ToString("HH:mm")</td>
+                        <td>
+                            <div class="alert-actions">
+                                <button class="btn-sm btn-danger-sm">Cancel Rest</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Completed Orders -->
+    <div id="order-completed" class="order-tab-content" style="display:none;">
+        <table>
+            <thead>
+                <tr><th>Order ID</th><th>Symbol</th><th>Side</th><th>Type</th><th>Qty</th><th>Avg Fill Price</th><th>Total</th><th>Commission</th><th>Filled At</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.CompletedOrders)
+                {
+                    var sideCls = order.Side == "Buy" ? "trade-buy" : "trade-sell";
+                    <tr>
+                        <td style="color:var(--text-secondary); font-family:monospace; font-size:12px;">@order.OrderId</td>
+                        <td><strong>@order.Symbol</strong></td>
+                        <td><span class="trade-badge @sideCls">@order.Side</span></td>
+                        <td>@order.OrderType</td>
+                        <td>@order.FilledQty</td>
+                        <td>$@(order.AvgFillPrice?.ToString("N2") ?? "—")</td>
+                        <td>$@((order.FilledQty * (order.AvgFillPrice ?? 0)).ToString("N2"))</td>
+                        <td style="color:var(--text-secondary)">$@(order.Commission?.ToString("N2") ?? "0.00")</td>
+                        <td style="color:var(--text-secondary)">@(order.FilledAt?.ToString("MMM dd, HH:mm") ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cancelled Orders -->
+    <div id="order-cancelled" class="order-tab-content" style="display:none;">
+        <table>
+            <thead>
+                <tr><th>Order ID</th><th>Symbol</th><th>Side</th><th>Type</th><th>Qty</th><th>Limit Price</th><th>TIF</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.CancelledOrders)
+                {
+                    var sideCls = order.Side == "Buy" ? "trade-buy" : "trade-sell";
+                    <tr>
+                        <td style="color:var(--text-secondary); font-family:monospace; font-size:12px;">@order.OrderId</td>
+                        <td><strong>@order.Symbol</strong></td>
+                        <td><span class="trade-badge @sideCls">@order.Side</span></td>
+                        <td>@order.OrderType</td>
+                        <td>@order.Quantity</td>
+                        <td>$@(order.LimitPrice?.ToString("N2") ?? "—")</td>
+                        <td><span class="order-tif">@order.TimeInForce</span></td>
+                        <td style="color:var(--text-secondary)">@order.CreatedAt.ToString("MMM dd, HH:mm")</td>
+                        <td>
+                            <button class="btn-sm btn-secondary">Re-submit</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Quick Order Sidebar -->
+<div class="panel orders-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Quick Order</span>
+    </div>
+
+    <div class="order-tabs">
+        <button class="buy-tab">Buy</button>
+        <button class="sell-tab">Sell</button>
+    </div>
+    <div class="form-group">
+        <label>Symbol</label>
+        <input type="text" placeholder="e.g. AAPL" />
+    </div>
+    <div class="form-group">
+        <label>Order Type</label>
+        <select>
+            <option>Market Order</option>
+            <option>Limit Order</option>
+            <option>Stop Loss</option>
+            <option>Stop Limit</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" placeholder="0" />
+    </div>
+    <div class="form-group">
+        <label>Limit Price</label>
+        <input type="number" placeholder="0.00" />
+    </div>
+    <div class="form-group">
+        <label>Time in Force</label>
+        <select>
+            <option>Day</option>
+            <option>GTC (Good Till Cancelled)</option>
+            <option>IOC (Immediate or Cancel)</option>
+            <option>FOK (Fill or Kill)</option>
+        </select>
+    </div>
+    <button class="btn-order" style="margin-top:12px;">Submit Order</button>
+
+    <!-- Order Guidance -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Buying Power</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Available Cash</span><span>$24,120.42</span></div>
+            <div class="order-summary-row"><span>Margin Available</span><span>$48,240.84</span></div>
+            <div class="order-summary-row"><span>Open Order Value</span><span class="text-red">-$12,380.00</span></div>
+            <div class="order-summary-row"><span>Net Buying Power</span><span style="font-weight:600;">$59,981.26</span></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function showOrderTab(tab) {
+    document.querySelectorAll('.order-tab-content').forEach(el => el.style.display = 'none');
+    document.getElementById('order-' + tab).style.display = 'block';
+    const btns = document.querySelectorAll('.orders-main .tab-row button');
+    btns.forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+</script>
+}

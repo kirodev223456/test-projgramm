@@ -344,3 +344,368 @@ tfoot td { padding: 10px 8px; border-top: 2px solid var(--border); }
 .compact-table { font-size: 12px; }
 .compact-table th { font-size: 10px; padding: 4px 6px; }
 .compact-table td { padding: 6px; }
+
+
+
+/* ==========================================
+   SETTINGS PAGE
+   ========================================== */
+.settings-main { grid-column: 1; grid-row: 1 / -1; }
+.settings-sidebar { grid-column: 2; grid-row: 1 / -1; border-left: 1px solid var(--border); }
+
+.settings-section { margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.settings-section:last-child { border-bottom: none; }
+.settings-section-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.settings-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.settings-section-header .settings-section-title { margin-bottom: 0; }
+
+.settings-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.settings-actions { display: flex; gap: 10px; margin-top: 16px; }
+.settings-note { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+
+/* Buttons */
+.btn-primary {
+    padding: 9px 18px; border: none; border-radius: 6px; font-size: 13px;
+    font-weight: 600; cursor: pointer; background: var(--blue); color: #fff;
+    transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.9; }
+.btn-secondary {
+    padding: 9px 18px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+    font-weight: 500; cursor: pointer; background: transparent; color: var(--text-primary);
+    transition: all 0.2s;
+}
+.btn-secondary:hover { background: var(--bg-tertiary); }
+.btn-danger {
+    padding: 9px 18px; border: none; border-radius: 6px; font-size: 13px;
+    font-weight: 600; cursor: pointer; background: var(--red); color: #fff;
+    transition: opacity 0.2s;
+}
+.btn-danger:hover { opacity: 0.9; }
+.btn-danger-sm {
+    padding: 4px 10px; border: none; border-radius: 4px; font-size: 11px;
+    font-weight: 500; cursor: pointer; background: var(--red-dim); color: var(--red);
+    transition: opacity 0.2s;
+}
+.btn-danger-sm:hover { opacity: 0.8; }
+.btn-sm {
+    padding: 5px 10px; border: none; border-radius: 4px; font-size: 11px;
+    font-weight: 500; cursor: pointer;
+}
+.btn-icon {
+    width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 4px;
+    background: transparent; color: var(--text-secondary); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 12px;
+    transition: all 0.2s;
+}
+.btn-icon:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.btn-icon-danger:hover { background: var(--red-dim); color: var(--red); border-color: var(--red); }
+
+/* Toggle Switches */
+.settings-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.settings-toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 14px; font-weight: 500; }
+.toggle-description { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.toggle-switch {
+    width: 44px; height: 24px; border-radius: 12px; background: var(--bg-tertiary);
+    border: 1px solid var(--border); position: relative; cursor: pointer; transition: all 0.3s;
+}
+.toggle-switch.active { background: var(--green); border-color: var(--green); }
+.toggle-knob {
+    width: 18px; height: 18px; border-radius: 50%; background: #fff;
+    position: absolute; top: 2px; left: 2px; transition: transform 0.3s;
+}
+.toggle-switch.active .toggle-knob { transform: translateX(20px); }
+
+/* Badges */
+.badge-current {
+    display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px;
+    font-weight: 600; background: rgba(88,166,255,0.15); color: var(--blue); margin-left: 6px;
+}
+
+/* API Key Code */
+.key-code {
+    font-family: 'SF Mono', Consolas, monospace; font-size: 12px;
+    background: var(--bg-tertiary); padding: 3px 6px; border-radius: 3px;
+    color: var(--text-secondary);
+}
+.api-info-box {
+    background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px; font-size: 13px; color: var(--text-secondary);
+}
+
+/* Settings Profile Card */
+.settings-profile-card { text-align: center; padding: 20px 0; }
+.profile-avatar-lg {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--purple);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; margin: 0 auto 12px;
+}
+.profile-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.profile-email { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+.profile-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px;
+    font-weight: 600; background: rgba(88,166,255,0.15); color: var(--blue);
+}
+
+/* Settings Links */
+.settings-links { display: flex; flex-direction: column; gap: 0; }
+.settings-link {
+    display: block; padding: 8px 0; color: var(--blue); text-decoration: none;
+    font-size: 13px; border-bottom: 1px solid var(--border); transition: opacity 0.2s;
+}
+.settings-link:last-child { border-bottom: none; }
+.settings-link:hover { opacity: 0.8; }
+
+/* Header Icons */
+.header-icon-link { text-decoration: none; }
+.header-icon {
+    width: 32px; height: 32px; border-radius: 6px; background: var(--bg-tertiary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--text-secondary); transition: all 0.2s;
+    border: 1px solid var(--border);
+}
+.header-icon:hover { color: var(--text-primary); background: var(--bg-secondary); }
+
+/* ==========================================
+   ALERTS PAGE
+   ========================================== */
+.alerts-main { grid-column: 1; grid-row: 1 / -1; }
+.alerts-sidebar { grid-column: 2; grid-row: 1 / -1; border-left: 1px solid var(--border); }
+
+.alert-condition {
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    background: rgba(88,166,255,0.1); color: var(--blue); font-weight: 500;
+}
+.alert-notify {
+    font-size: 11px; color: var(--text-secondary);
+}
+.alert-actions { display: flex; gap: 4px; }
+
+/* Checkbox Group */
+.checkbox-group { display: flex; gap: 16px; margin-top: 4px; }
+.checkbox-item {
+    display: flex; align-items: center; gap: 6px; font-size: 13px;
+    color: var(--text-primary); cursor: pointer;
+}
+.checkbox-item input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: var(--blue);
+}
+
+/* Alert Tips */
+.alert-tips { display: flex; flex-direction: column; gap: 10px; }
+.alert-tip-item {
+    display: flex; align-items: flex-start; gap: 8px; font-size: 12px;
+    color: var(--text-secondary);
+}
+.tip-icon { font-size: 14px; flex-shrink: 0; }
+
+/* ==========================================
+   NEWS PAGE
+   ========================================== */
+.news-main { grid-column: 1; grid-row: 1 / -1; }
+.news-sidebar { grid-column: 2; grid-row: 1 / -1; border-left: 1px solid var(--border); }
+
+.trending-bar {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    background: var(--bg-secondary); border-radius: 8px; margin-bottom: 16px;
+    border: 1px solid var(--border); overflow-x: auto;
+}
+.trending-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
+.trending-tag {
+    padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;
+    background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);
+    white-space: nowrap; cursor: pointer; transition: all 0.2s;
+}
+.trending-tag:hover { border-color: var(--blue); color: var(--blue); }
+
+.news-filters { display: flex; gap: 4px; }
+.news-filter-btn {
+    padding: 5px 10px; border: none; border-radius: 4px; font-size: 12px;
+    font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary);
+    transition: all 0.2s;
+}
+.news-filter-btn.active { background: var(--bg-tertiary); color: var(--text-primary); }
+.news-filter-btn:hover { color: var(--text-primary); }
+
+/* News Articles */
+.news-feed { display: flex; flex-direction: column; gap: 0; }
+.news-article {
+    padding: 16px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: background 0.2s;
+}
+.news-article:hover { background: var(--bg-secondary); margin: 0 -16px; padding: 16px; border-radius: 8px; }
+.news-article-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.news-source { font-size: 11px; font-weight: 600; color: var(--blue); }
+.news-time { font-size: 11px; color: var(--text-secondary); }
+.news-sentiment {
+    font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px;
+    text-transform: uppercase;
+}
+.sentiment-bullish { background: var(--green-dim); color: var(--green); }
+.sentiment-bearish { background: var(--red-dim); color: var(--red); }
+.sentiment-neutral { background: var(--bg-tertiary); color: var(--text-secondary); }
+.news-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+.news-summary { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px; }
+.news-meta { display: flex; align-items: center; gap: 10px; }
+.news-category {
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    background: var(--bg-tertiary); color: var(--text-secondary);
+}
+.news-symbols { display: flex; gap: 4px; }
+.news-symbol-tag {
+    font-size: 11px; padding: 2px 6px; border-radius: 3px;
+    background: rgba(88,166,255,0.1); color: var(--blue); font-weight: 600;
+}
+
+/* Earnings */
+.earnings-list { display: flex; flex-direction: column; gap: 0; }
+.earnings-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.earnings-item:last-child { border-bottom: none; }
+.earnings-right { text-align: right; }
+.earnings-date { font-size: 12px; font-weight: 600; }
+.earnings-time { font-size: 11px; color: var(--text-secondary); }
+.earnings-est { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Sentiment Meter */
+.sentiment-meter { margin-bottom: 12px; }
+.sentiment-bar {
+    height: 8px; background: var(--red-dim); border-radius: 4px; overflow: hidden;
+    margin-bottom: 6px;
+}
+.sentiment-fill-bullish { height: 100%; background: var(--green); border-radius: 4px; }
+.sentiment-labels { display: flex; justify-content: space-between; font-size: 11px; }
+
+/* Economic Events */
+.econ-events { display: flex; flex-direction: column; gap: 10px; }
+.econ-event { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.econ-event:last-child { border-bottom: none; }
+.econ-event-time { font-size: 11px; color: var(--text-secondary); }
+.econ-event-name { font-size: 13px; font-weight: 500; margin: 2px 0; }
+.econ-event-impact { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px; display: inline-block; }
+.impact-high { background: var(--red-dim); color: var(--red); }
+.impact-medium { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.impact-low { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+/* ==========================================
+   ORDERS PAGE
+   ========================================== */
+.orders-main { grid-column: 1; grid-row: 1 / -1; }
+.orders-sidebar { grid-column: 2; grid-row: 1 / -1; border-left: 1px solid var(--border); }
+
+.order-tif {
+    font-size: 11px; padding: 2px 6px; border-radius: 3px;
+    background: var(--bg-tertiary); color: var(--text-secondary); font-weight: 500;
+}
+
+/* Fill Progress */
+.fill-progress {
+    height: 4px; background: var(--bg-tertiary); border-radius: 2px;
+    margin-top: 4px; overflow: hidden;
+}
+.fill-bar { height: 100%; background: var(--green); border-radius: 2px; }
+
+/* ==========================================
+   ACCOUNT PAGE
+   ========================================== */
+.account-main { grid-column: 1; grid-row: 1 / -1; }
+.account-sidebar { grid-column: 2; grid-row: 1 / -1; border-left: 1px solid var(--border); }
+
+.account-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+
+.fund-actions { display: flex; gap: 10px; }
+.btn-fund {
+    padding: 10px 20px; border: none; border-radius: 6px; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.btn-deposit { background: var(--green); color: #fff; }
+.btn-withdraw { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-transfer { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-fund:hover { opacity: 0.9; }
+
+/* Account Status */
+.account-status-card { text-align: center; padding: 16px 0; margin-bottom: 16px; }
+.account-status-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    font-weight: 600; margin-bottom: 6px;
+}
+.status-active { background: var(--green-dim); color: var(--green); }
+.account-tier { font-size: 16px; font-weight: 700; }
+
+/* Bank Items */
+.bank-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.bank-item:last-child { border-bottom: none; }
+.bank-name { font-size: 13px; font-weight: 600; }
+.bank-details { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.bank-status { display: flex; gap: 4px; }
+.badge-default {
+    font-size: 10px; padding: 2px 6px; border-radius: 3px;
+    background: rgba(88,166,255,0.15); color: var(--blue); font-weight: 600;
+}
+.badge-verified {
+    font-size: 10px; padding: 2px 6px; border-radius: 3px;
+    background: var(--green-dim); color: var(--green); font-weight: 600;
+}
+.badge-unverified {
+    font-size: 10px; padding: 2px 6px; border-radius: 3px;
+    background: rgba(210,153,34,0.15); color: var(--yellow); font-weight: 600;
+}
+
+/* ==========================================
+   SCREENER PAGE
+   ========================================== */
+.screener-main { grid-column: 1; grid-row: 1 / -1; }
+.screener-sidebar { grid-column: 2; grid-row: 1 / -1; border-left: 1px solid var(--border); }
+
+.screener-filters {
+    display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+    padding: 14px; background: var(--bg-secondary); border-radius: 8px;
+    border: 1px solid var(--border); margin-bottom: 16px;
+}
+.filter-range { display: flex; align-items: center; gap: 6px; }
+.range-input {
+    width: 70px; padding: 7px 8px; background: var(--bg-primary); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text-primary); font-size: 12px; outline: none;
+}
+.range-input:focus { border-color: var(--blue); }
+.filter-actions-group { display: flex; gap: 6px; align-items: flex-end; padding-bottom: 0; }
+
+/* 52-Week Range */
+.range-52w { min-width: 100px; }
+.range-bar-52w {
+    height: 4px; background: var(--bg-tertiary); border-radius: 2px;
+    position: relative; margin-bottom: 4px;
+}
+.range-marker {
+    position: absolute; top: -3px; width: 10px; height: 10px;
+    background: var(--blue); border-radius: 50%; transform: translateX(-50%);
+}
+.range-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-secondary); }
+
+/* Rating Badges */
+.rating-badge {
+    display: inline-block; padding: 3px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; white-space: nowrap;
+}
+.rating-strong-buy { background: var(--green-dim); color: var(--green); }
+.rating-buy { background: rgba(63,185,80,0.1); color: var(--green); }
+.rating-hold { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.rating-sell { background: var(--red-dim); color: var(--red); }
+
+/* Saved Screens */
+.saved-screen-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.saved-screen-item:last-child { border-bottom: none; }
+.saved-screen-name { font-size: 13px; font-weight: 500; }
+.saved-screen-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }

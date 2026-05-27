@@ -1,0 +1,145 @@
+@model AccountViewModel
+@{
+    ViewData["Title"] = "Account";
+    ViewData["ActivePage"] = "Account";
+}
+
+<!-- Account Main -->
+<div class="panel account-main">
+    <!-- Balance Cards -->
+    <div class="account-cards">
+        <div class="stat-card">
+            <div class="stat-label">Total Balance</div>
+            <div class="stat-value">$@Model.TotalBalance.ToString("N2")</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Portfolio + Cash</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Available Cash</div>
+            <div class="stat-value">$@Model.AvailableCash.ToString("N2")</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Ready to trade</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Buying Power</div>
+            <div class="stat-value">$@Model.BuyingPower.ToString("N2")</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Including margin</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Margin Used</div>
+            <div class="stat-value text-red">$@Model.MarginUsed.ToString("N2")</div>
+            <div class="stat-change" style="color:var(--text-secondary);">of $@Model.Limits.MarginLimit.ToString("N0") limit</div>
+        </div>
+    </div>
+
+    <!-- Fund Actions -->
+    <div class="fund-actions">
+        <button class="btn-fund btn-deposit">Deposit Funds</button>
+        <button class="btn-fund btn-withdraw">Withdraw Funds</button>
+        <button class="btn-fund btn-transfer">Transfer</button>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="panel-header" style="margin-top:20px;">
+        <span class="panel-title">Transaction History</span>
+        <div class="news-filters">
+            <button class="news-filter-btn active">All</button>
+            <button class="news-filter-btn">Deposits</button>
+            <button class="news-filter-btn">Withdrawals</button>
+            <button class="news-filter-btn">Dividends</button>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Type</th><th>Amount</th><th>Method</th><th>Description</th><th>Date</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var txn in Model.RecentTransactions)
+            {
+                var typeCls = txn.Type == "Deposit" || txn.Type == "Dividend" ? "trade-buy" :
+                              txn.Type == "Withdrawal" || txn.Type == "Fee" ? "trade-sell" : "";
+                var amtCls = txn.Amount >= 0 ? "text-green" : "text-red";
+                var amtSign = txn.Amount >= 0 ? "+" : "";
+                var statusCls = txn.Status == "Completed" ? "status-filled" :
+                                txn.Status == "Pending" ? "status-pending" : "status-cancelled";
+                <tr>
+                    <td style="color:var(--text-secondary); font-family:monospace; font-size:11px;">@txn.TransactionId</td>
+                    <td><span class="trade-badge @typeCls">@txn.Type</span></td>
+                    <td class="@amtCls" style="font-weight:600;">@(amtSign)$@Math.Abs(txn.Amount).ToString("N2")</td>
+                    <td>@txn.Method</td>
+                    <td style="color:var(--text-secondary)">@txn.Description</td>
+                    <td style="color:var(--text-secondary)">@txn.Date.ToString("MMM dd, yyyy")</td>
+                    <td><span class="status-badge @statusCls">@txn.Status</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Account Sidebar -->
+<div class="panel account-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Account Details</span>
+    </div>
+
+    <div class="account-status-card">
+        <div class="account-status-badge status-active">@Model.AccountStatus</div>
+        <div class="account-tier">@Model.AccountTier Account</div>
+    </div>
+
+    <div class="order-summary">
+        <div class="order-summary-row"><span>Account Status</span><span class="text-green">@Model.AccountStatus</span></div>
+        <div class="order-summary-row"><span>Account Tier</span><span>@Model.AccountTier</span></div>
+        <div class="order-summary-row"><span>Day Trades Left</span><span>@Model.Limits.DayTradesRemaining / 3</span></div>
+        <div class="order-summary-row"><span>Margin Limit</span><span>$@Model.Limits.MarginLimit.ToString("N0")</span></div>
+    </div>
+
+    <!-- Linked Banks -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Linked Accounts</div>
+        @foreach (var bank in Model.LinkedAccounts)
+        {
+            <div class="bank-item">
+                <div class="bank-info">
+                    <div class="bank-name">@bank.BankName</div>
+                    <div class="bank-details">@bank.AccountType ****@bank.AccountLast4</div>
+                </div>
+                <div class="bank-status">
+                    @if (bank.IsDefault)
+                    {
+                        <span class="badge-default">Default</span>
+                    }
+                    @if (bank.IsVerified)
+                    {
+                        <span class="badge-verified">Verified</span>
+                    }
+                    else
+                    {
+                        <span class="badge-unverified">Unverified</span>
+                    }
+                </div>
+            </div>
+        }
+        <button class="btn-secondary" style="width:100%; margin-top:12px;">+ Link New Account</button>
+    </div>
+
+    <!-- Limits -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Account Limits</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Daily Deposit</span><span>$@Model.Limits.DailyDeposit.ToString("N0")</span></div>
+            <div class="order-summary-row"><span>Daily Withdrawal</span><span>$@Model.Limits.DailyWithdrawal.ToString("N0")</span></div>
+            <div class="order-summary-row"><span>Monthly Deposit</span><span>$@Model.Limits.MonthlyDeposit.ToString("N0")</span></div>
+            <div class="order-summary-row"><span>Monthly Withdrawal</span><span>$@Model.Limits.MonthlyWithdrawal.ToString("N0")</span></div>
+        </div>
+    </div>
+
+    <!-- Documents -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Documents</div>
+        <div class="settings-links">
+            <a href="#" class="settings-link">Monthly Statements</a>
+            <a href="#" class="settings-link">Tax Documents (1099)</a>
+            <a href="#" class="settings-link">Trade Confirmations</a>
+            <a href="#" class="settings-link">Fee Schedule</a>
+        </div>
+    </div>
+</div>
