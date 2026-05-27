@@ -1,0 +1,132 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In - TradeX Pro</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <script>
+        (function() {
+            var theme = localStorage.getItem('tradexpro-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <!-- Left Side: Branding -->
+        <div class="auth-brand">
+            <div class="auth-brand-content">
+                <div class="auth-logo">TradeX Pro</div>
+                <h1 class="auth-tagline">Trade Smarter,<br/>Not Harder.</h1>
+                <p class="auth-description">
+                    Access real-time market data, advanced charting, and powerful analytics — all in one platform.
+                </p>
+                <div class="auth-features">
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#9889;</span>
+                        <span>Real-time market data & price alerts</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#128200;</span>
+                        <span>Advanced charting with 50+ indicators</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#128274;</span>
+                        <span>Bank-grade security & 2FA protection</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#127919;</span>
+                        <span>AI-powered stock screener & analytics</span>
+                    </div>
+                </div>
+                <div class="auth-stats">
+                    <div class="auth-stat">
+                        <div class="auth-stat-value">2.4M+</div>
+                        <div class="auth-stat-label">Active Traders</div>
+                    </div>
+                    <div class="auth-stat">
+                        <div class="auth-stat-value">$18B+</div>
+                        <div class="auth-stat-label">Daily Volume</div>
+                    </div>
+                    <div class="auth-stat">
+                        <div class="auth-stat-value">99.9%</div>
+                        <div class="auth-stat-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Login Form -->
+        <div class="auth-form-panel">
+            <div class="auth-form-wrapper">
+                <div class="auth-form-header">
+                    <h2 class="auth-form-title">Welcome Back</h2>
+                    <p class="auth-form-subtitle">Sign in to your trading account</p>
+                </div>
+
+                <!-- Social Login -->
+                <div class="auth-social">
+                    <button class="auth-social-btn">
+                        <span class="social-icon">G</span>
+                        <span>Continue with Google</span>
+                    </button>
+                    <button class="auth-social-btn">
+                        <span class="social-icon">A</span>
+                        <span>Continue with Apple</span>
+                    </button>
+                </div>
+
+                <div class="auth-divider">
+                    <span>or sign in with email</span>
+                </div>
+
+                <!-- Login Form -->
+                <form asp-controller="Auth" asp-action="Login" method="post" class="auth-form">
+                    <div class="auth-field">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="john@example.com" required />
+                    </div>
+                    <div class="auth-field">
+                        <label for="password">
+                            Password
+                            <a asp-controller="Auth" asp-action="ForgotPassword" class="auth-link-inline">Forgot?</a>
+                        </label>
+                        <div class="auth-password-wrapper">
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required />
+                            <button type="button" class="auth-password-toggle" onclick="togglePassword()">&#128065;</button>
+                        </div>
+                    </div>
+                    <div class="auth-remember">
+                        <label class="auth-checkbox">
+                            <input type="checkbox" name="remember" />
+                            <span>Remember me for 30 days</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="auth-submit-btn">Sign In</button>
+                </form>
+
+                <!-- Footer -->
+                <div class="auth-form-footer">
+                    <p>Don't have an account? <a asp-controller="Auth" asp-action="Register" class="auth-link">Create Account</a></p>
+                </div>
+
+                <div class="auth-legal">
+                    <p>By signing in, you agree to our <a href="#" class="auth-link">Terms of Service</a> and <a href="#" class="auth-link">Privacy Policy</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('password');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+    </script>
+</body>
+</html>

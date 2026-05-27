@@ -87,4 +87,20 @@ document.addEventListener('DOMContentLoaded', function () {
             this.classList.toggle('active');
         });
     });
+
+    // User dropdown menu
+    const userAvatar = document.getElementById('userAvatar');
+    const userDropdown = document.getElementById('userDropdown');
+    if (userAvatar && userDropdown) {
+        userAvatar.addEventListener('click', function (e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!userDropdown.contains(e.target) && e.target !== userAvatar) {
+                userDropdown.classList.remove('show');
+            }
+        });
+    }
 });

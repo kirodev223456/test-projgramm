@@ -1,0 +1,148 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Account - TradeX Pro</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <script>
+        (function() {
+            var theme = localStorage.getItem('tradexpro-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <!-- Left Side: Branding -->
+        <div class="auth-brand">
+            <div class="auth-brand-content">
+                <div class="auth-logo">TradeX Pro</div>
+                <h1 class="auth-tagline">Start Trading<br/>in Minutes.</h1>
+                <p class="auth-description">
+                    Join millions of traders who trust TradeX Pro for fast execution, advanced tools, and zero commission trading.
+                </p>
+                <div class="auth-features">
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#10003;</span>
+                        <span>$0 commission on stocks & ETFs</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#10003;</span>
+                        <span>No minimum deposit required</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#10003;</span>
+                        <span>Fractional shares starting at $1</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#10003;</span>
+                        <span>Free real-time market data</span>
+                    </div>
+                    <div class="auth-feature-item">
+                        <span class="auth-feature-icon">&#10003;</span>
+                        <span>SIPC protected up to $500K</span>
+                    </div>
+                </div>
+                <div class="auth-testimonial">
+                    <p class="testimonial-text">"TradeX Pro completely changed how I trade. The analytics alone are worth it."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">MK</div>
+                        <div>
+                            <div class="testimonial-name">Michael K.</div>
+                            <div class="testimonial-role">Day Trader, 3 years</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Register Form -->
+        <div class="auth-form-panel">
+            <div class="auth-form-wrapper">
+                <div class="auth-form-header">
+                    <h2 class="auth-form-title">Create Account</h2>
+                    <p class="auth-form-subtitle">Start your trading journey today</p>
+                </div>
+
+                <div class="auth-social">
+                    <button class="auth-social-btn">
+                        <span class="social-icon">G</span>
+                        <span>Sign up with Google</span>
+                    </button>
+                    <button class="auth-social-btn">
+                        <span class="social-icon">A</span>
+                        <span>Sign up with Apple</span>
+                    </button>
+                </div>
+
+                <div class="auth-divider">
+                    <span>or register with email</span>
+                </div>
+
+                <form asp-controller="Auth" asp-action="Register" method="post" class="auth-form">
+                    <div class="auth-field-row">
+                        <div class="auth-field">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" name="firstName" placeholder="John" required />
+                        </div>
+                        <div class="auth-field">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" placeholder="Doe" required />
+                        </div>
+                    </div>
+                    <div class="auth-field">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="john@example.com" required />
+                    </div>
+                    <div class="auth-field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Min. 8 characters" required minlength="8" />
+                        <div class="password-strength">
+                            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                            <span class="strength-text" id="strengthText">Use 8+ chars with letters, numbers & symbols</span>
+                        </div>
+                    </div>
+                    <div class="auth-field">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required />
+                    </div>
+                    <div class="auth-remember">
+                        <label class="auth-checkbox">
+                            <input type="checkbox" name="terms" required />
+                            <span>I agree to the <a href="#" class="auth-link">Terms of Service</a> and <a href="#" class="auth-link">Privacy Policy</a></span>
+                        </label>
+                    </div>
+                    <button type="submit" class="auth-submit-btn">Create Account</button>
+                </form>
+
+                <div class="auth-form-footer">
+                    <p>Already have an account? <a asp-controller="Auth" asp-action="Login" class="auth-link">Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('password').addEventListener('input', function() {
+            const val = this.value;
+            const fill = document.getElementById('strengthFill');
+            const text = document.getElementById('strengthText');
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+            const colors = ['var(--red)', 'var(--orange)', 'var(--yellow)', 'var(--green)'];
+            const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+            fill.style.width = (score * 25) + '%';
+            fill.style.background = colors[score - 1] || 'var(--border)';
+            text.textContent = score > 0 ? labels[score - 1] : 'Use 8+ chars with letters, numbers & symbols';
+        });
+    </script>
+</body>
+</html>

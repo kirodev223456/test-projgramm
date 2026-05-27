@@ -44,7 +44,32 @@
                 <a asp-controller="Home" asp-action="Settings" class="header-icon-link" title="Settings">
                     <div class="header-icon">&#9881;</div>
                 </a>
-                <div class="avatar">JD</div>
+                <div class="user-menu">
+                    <div class="avatar" id="userAvatar">JD</div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-avatar">JD</div>
+                            <div class="dropdown-info">
+                                <div class="dropdown-name">John Doe</div>
+                                <div class="dropdown-email">john.doe&#64;tradexpro.com</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a asp-controller="Home" asp-action="Portfolio" class="dropdown-item">
+                            <span class="dropdown-icon">&#128188;</span> My Portfolio
+                        </a>
+                        <a asp-controller="Home" asp-action="Account" class="dropdown-item">
+                            <span class="dropdown-icon">&#128100;</span> Account
+                        </a>
+                        <a asp-controller="Home" asp-action="Settings" class="dropdown-item">
+                            <span class="dropdown-icon">&#9881;</span> Settings
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a asp-controller="Auth" asp-action="Logout" class="dropdown-item dropdown-item-danger">
+                            <span class="dropdown-icon">&#9211;</span> Sign Out
+                        </a>
+                    </div>
+                </div>
             </div>
         </header>
 
