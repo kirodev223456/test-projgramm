@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeX Pro - Trading Platform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #1c2128;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --green: #3fb950;
+            --green-dim: #1a4d2e;
+            --red: #f85149;
+            --red-dim: #4d1a1a;
+            --blue: #58a6ff;
+            --purple: #bc8cff;
+            --yellow: #d29922;
+            --orange: #db6d28;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* Layout */
+        .dashboard { display: grid; grid-template-rows: 56px 1fr; grid-template-columns: 1fr; height: 100vh; }
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+        }
+        .header-left { display: flex; align-items: center; gap: 24px; }
+        .logo { font-size: 20px; font-weight: 700; color: var(--blue); letter-spacing: -0.5px; }
+        .nav { display: flex; gap: 4px; }
+        .nav a {
+            color: var(--text-secondary); text-decoration: none; padding: 8px 14px;
+            border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s;
+        }
+        .nav a:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .nav a.active { color: var(--text-primary); background: var(--bg-tertiary); }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right .balance { font-size: 14px; color: var(--green); font-weight: 600; }
+        .header-right .avatar {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--purple);
+            display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;
+        }
+        .main { display: grid; grid-template-columns: 1fr 320px; grid-template-rows: 1fr 280px; gap: 1px; background: var(--border); }
+
+        /* Panels */
+        .panel { background: var(--bg-primary); padding: 16px; overflow-y: auto; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .panel-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); }
+
+        /* Chart Area */
+        .chart-panel { grid-column: 1; grid-row: 1; }
+        .chart-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .ticker-info { display: flex; align-items: baseline; gap: 12px; }
+        .ticker-symbol { font-size: 22px; font-weight: 700; }
+        .ticker-price { font-size: 22px; font-weight: 600; }
+        .ticker-change { font-size: 13px; font-weight: 500; padding: 3px 8px; border-radius: 4px; }
+        .ticker-change.up { color: var(--green); background: var(--green-dim); }
+        .ticker-change.down { color: var(--red); background: var(--red-dim); }
+        .timeframes { display: flex; gap: 2px; margin-left: auto; }
+        .timeframes button {
+            background: none; border: none; color: var(--text-secondary); padding: 5px 10px;
+            border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 500;
+        }
+        .timeframes button.active { background: var(--bg-tertiary); color: var(--text-primary); }
+        .chart-canvas { width: 100%; height: calc(100% - 80px); background: var(--bg-secondary); border-radius: 8px; position: relative; overflow: hidden; }
+
+        /* Order Panel */
+        .order-panel { grid-column: 2; grid-row: 1; border-left: 1px solid var(--border); }
+        .order-tabs { display: flex; margin-bottom: 16px; background: var(--bg-secondary); border-radius: 8px; padding: 3px; }
+        .order-tabs button {
+            flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 13px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .order-tabs .buy-tab { background: var(--green); color: #fff; }
+        .order-tabs .sell-tab { background: transparent; color: var(--text-secondary); }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px 12px; background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text-primary); font-size: 14px; outline: none;
+        }
+        .form-group input:focus { border-color: var(--blue); }
+        .order-summary { background: var(--bg-secondary); border-radius: 8px; padding: 12px; margin: 16px 0; }
+        .order-summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+        .order-summary-row span:first-child { color: var(--text-secondary); }
+        .btn-order {
+            width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px;
+            font-weight: 600; cursor: pointer; background: var(--green); color: #fff; transition: opacity 0.2s;
+        }
+        .btn-order:hover { opacity: 0.9; }
+
+        /* Watchlist / Positions */
+        .bottom-left { grid-column: 1; grid-row: 2; }
+        .bottom-right { grid-column: 2; grid-row: 2; border-left: 1px solid var(--border); }
+        .tab-row { display: flex; gap: 0; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .tab-row button {
+            background: none; border: none; color: var(--text-secondary); padding: 8px 16px;
+            font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;
+        }
+        .tab-row button.active { color: var(--text-primary); border-bottom-color: var(--blue); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; color: var(--text-secondary); font-weight: 500; padding: 6px 8px; font-size: 11px; text-transform: uppercase; }
+        td { padding: 8px; border-top: 1px solid var(--border); }
+        .text-green { color: var(--green); }
+        .text-red { color: var(--red); }
+
+        /* Watchlist */
+        .watchlist-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 4px;
+        }
+        .watchlist-item:hover { background: var(--bg-secondary); }
+        .wl-symbol { font-weight: 600; font-size: 14px; }
+        .wl-name { font-size: 11px; color: var(--text-secondary); }
+        .wl-price { text-align: right; }
+        .wl-price-val { font-weight: 600; font-size: 14px; }
+        .wl-change { font-size: 12px; }
+
+        /* Sparkline placeholder */
+        .sparkline { width: 60px; height: 30px; margin: 0 12px; }
+        .sparkline svg { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<div class="dashboard">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">TradeX Pro</div>
+            <nav class="nav">
+                <a href="#" class="active">Dashboard</a>
+                <a href="#">Markets</a>
+                <a href="#">Portfolio</a>
+                <a href="#">History</a>
+                <a href="#">Analytics</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="balance">$124,563.82</div>
+            <div class="avatar">JD</div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Chart Panel -->
+        <div class="panel chart-panel">
+            <div class="chart-toolbar">
+                <div class="ticker-info">
+                    <span class="ticker-symbol">AAPL</span>
+                    <span class="ticker-price">$189.84</span>
+                    <span class="ticker-change up">+2.34 (+1.25%)</span>
+                </div>
+                <div class="timeframes">
+                    <button>1m</button>
+                    <button>5m</button>
+                    <button>15m</button>
+                    <button class="active">1H</button>
+                    <button>4H</button>
+                    <button>1D</button>
+                    <button>1W</button>
+                </div>
+            </div>
+            <div class="chart-canvas" id="chartCanvas">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Order Panel -->
+        <div class="panel order-panel">
+            <div class="panel-header">
+                <span class="panel-title">Place Order</span>
+            </div>
+            <div class="order-tabs">
+                <button class="buy-tab">Buy</button>
+                <button class="sell-tab">Sell</button>
+            </div>
+            <div class="form-group">
+                <label>Order Type</label>
+                <select>
+                    <option>Market Order</option>
+                    <option>Limit Order</option>
+                    <option>Stop Loss</option>
+                    <option>Stop Limit</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantity (shares)</label>
+                <input type="number" value="10" />
+            </div>
+            <div class="form-group">
+                <label>Price</label>
+                <input type="text" value="$189.84" />
+            </div>
+            <div class="order-summary">
+                <div class="order-summary-row"><span>Subtotal</span><span>$1,898.40</span></div>
+                <div class="order-summary-row"><span>Commission</span><span>$0.00</span></div>
+                <div class="order-summary-row"><span>Estimated Total</span><span style="font-weight:600">$1,898.40</span></div>
+            </div>
+            <button class="btn-order">Buy AAPL</button>
+
+            <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+                <div class="panel-title" style="margin-bottom:12px;">Quick Stats</div>
+                <div class="order-summary" style="margin:0;">
+                    <div class="order-summary-row"><span>Day High</span><span>$191.02</span></div>
+                    <div class="order-summary-row"><span>Day Low</span><span>$187.12</span></div>
+                    <div class="order-summary-row"><span>Volume</span><span>48.2M</span></div>
+                    <div class="order-summary-row"><span>Avg Volume</span><span>52.1M</span></div>
+                    <div class="order-summary-row"><span>Market Cap</span><span>$2.94T</span></div>
+                    <div class="order-summary-row" style="margin:0;"><span>P/E Ratio</span><span>31.2</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Left: Positions & Orders -->
+        <div class="panel bottom-left">
+            <div class="tab-row">
+                <button class="active">Positions</button>
+                <button>Open Orders</button>
+                <button>Trade History</button>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Symbol</th><th>Qty</th><th>Avg Cost</th><th>Current</th><th>P&L</th><th>P&L %</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>AAPL</strong></td><td>50</td><td>$175.20</td><td>$189.84</td><td class="text-green">+$732.00</td><td class="text-green">+8.36%</td></tr>
+                    <tr><td><strong>MSFT</strong></td><td>30</td><td>$380.50</td><td>$415.20</td><td class="text-green">+$1,041.00</td><td class="text-green">+9.12%</td></tr>
+                    <tr><td><strong>TSLA</strong></td><td>20</td><td>$262.80</td><td>$248.50</td><td class="text-red">-$286.00</td><td class="text-red">-5.44%</td></tr>
+                    <tr><td><strong>NVDA</strong></td><td>15</td><td>$875.00</td><td>$924.60</td><td class="text-green">+$744.00</td><td class="text-green">+5.67%</td></tr>
+                    <tr><td><strong>AMZN</strong></td><td>25</td><td>$178.30</td><td>$185.90</td><td class="text-green">+$190.00</td><td class="text-green">+4.26%</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bottom Right: Watchlist -->
+        <div class="panel bottom-right">
+            <div class="panel-header">
+                <span class="panel-title">Watchlist</span>
+            </div>
+            <div class="watchlist-item">
+                <div><div class="wl-symbol">GOOGL</div><div class="wl-name">Alphabet Inc.</div></div>
+                <div class="wl-price"><div class="wl-price-val">$174.82</div><div class="wl-change text-green">+1.84%</div></div>
+            </div>
+            <div class="watchlist-item">
+                <div><div class="wl-symbol">META</div><div class="wl-name">Meta Platforms</div></div>
+                <div class="wl-price"><div class="wl-price-val">$502.30</div><div class="wl-change text-green">+2.15%</div></div>
+            </div>
+            <div class="watchlist-item">
+                <div><div class="wl-symbol">AMD</div><div class="wl-name">Advanced Micro</div></div>
+                <div class="wl-price"><div class="wl-price-val">$162.45</div><div class="wl-change text-red">-0.92%</div></div>
+            </div>
+            <div class="watchlist-item">
+                <div><div class="wl-symbol">NFLX</div><div class="wl-name">Netflix Inc.</div></div>
+                <div class="wl-price"><div class="wl-price-val">$628.70</div><div class="wl-change text-green">+0.67%</div></div>
+            </div>
+            <div class="watchlist-item">
+                <div><div class="wl-symbol">JPM</div><div class="wl-name">JPMorgan Chase</div></div>
+                <div class="wl-price"><div class="wl-price-val">$198.55</div><div class="wl-change text-red">-0.34%</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Draw a realistic-looking candlestick/line chart
+const canvas = document.getElementById('priceChart');
+const container = document.getElementById('chartCanvas');
+canvas.width = container.offsetWidth;
+canvas.height = container.offsetHeight;
+const ctx = canvas.getContext('2d');
+
+function drawChart() {
+    const w = canvas.width;
+    const h = canvas.height;
+    const padding = { top: 20, right: 60, bottom: 30, left: 10 };
+    const chartW = w - padding.left - padding.right;
+    const chartH = h - padding.top - padding.bottom;
+
+    // Generate price data (simulated uptrend)
+    const dataPoints = 80;
+    let prices = [];
+    let price = 182;
+    for (let i = 0; i < dataPoints; i++) {
+        price += (Math.random() - 0.42) * 2.2;
+        prices.push(price);
+    }
+
+    const minPrice = Math.min(...prices) - 2;
+    const maxPrice = Math.max(...prices) + 2;
+    const priceRange = maxPrice - minPrice;
+
+    const getX = (i) => padding.left + (i / (dataPoints - 1)) * chartW;
+    const getY = (p) => padding.top + (1 - (p - minPrice) / priceRange) * chartH;
+
+    // Grid lines
+    ctx.strokeStyle = '#21262d';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+        const y = padding.top + (i / 5) * chartH;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(w - padding.right, y);
+        ctx.stroke();
+
+        // Price labels
+        const priceLabel = (maxPrice - (i / 5) * priceRange).toFixed(2);
+        ctx.fillStyle = '#8b949e';
+        ctx.font = '11px -apple-system, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('$' + priceLabel, w - padding.right + 8, y + 4);
+    }
+
+    // Area fill gradient
+    const gradient = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
+    gradient.addColorStop(0, 'rgba(63, 185, 80, 0.15)');
+    gradient.addColorStop(1, 'rgba(63, 185, 80, 0.0)');
+
+    ctx.beginPath();
+    ctx.moveTo(getX(0), h - padding.bottom);
+    for (let i = 0; i < dataPoints; i++) {
+        ctx.lineTo(getX(i), getY(prices[i]));
+    }
+    ctx.lineTo(getX(dataPoints - 1), h - padding.bottom);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // Price line
+    ctx.beginPath();
+    ctx.moveTo(getX(0), getY(prices[0]));
+    for (let i = 1; i < dataPoints; i++) {
+        ctx.lineTo(getX(i), getY(prices[i]));
+    }
+    ctx.strokeStyle = '#3fb950';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Current price indicator
+    const lastPrice = prices[prices.length - 1];
+    const lastX = getX(dataPoints - 1);
+    const lastY = getY(lastPrice);
+
+    // Dashed line
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(63, 185, 80, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, lastY);
+    ctx.lineTo(w - padding.right, lastY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#3fb950';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 8, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(63, 185, 80, 0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Volume bars at bottom
+    for (let i = 0; i < dataPoints; i++) {
+        const vol = Math.random() * 30 + 5;
+        const barH = vol;
+        const barW = chartW / dataPoints * 0.6;
+        const barX = getX(i) - barW / 2;
+        const isGreen = i === 0 ? true : prices[i] >= prices[i - 1];
+        ctx.fillStyle = isGreen ? 'rgba(63, 185, 80, 0.25)' : 'rgba(248, 81, 73, 0.25)';
+        ctx.fillRect(barX, h - padding.bottom - barH, barW, barH);
+    }
+
+    // Time labels
+    const times = ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'];
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    times.forEach((t, i) => {
+        const x = padding.left + (i / (times.length - 1)) * chartW;
+        ctx.fillText(t, x, h - 8);
+    });
+}
+
+drawChart();
+window.addEventListener('resize', () => {
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+    drawChart();
+});
+</script>
+</body>
+</html>
