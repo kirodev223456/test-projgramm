@@ -1,0 +1,240 @@
+@model AnalyticsViewModel
+@{
+    ViewData["Title"] = "Analytics";
+    ViewData["ActivePage"] = "Analytics";
+}
+
+<!-- Analytics Main -->
+<div class="panel analytics-main">
+    <!-- KPI Cards -->
+    <div class="analytics-kpis">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:var(--green-dim); color:var(--green);">$</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Total Return</div>
+                <div class="kpi-value text-green">+$@Model.TotalReturn.ToString("N2")</div>
+                <div class="kpi-sub">+@Model.TotalReturnPercent.ToString("N2")%</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(88,166,255,0.15); color:var(--blue);">S</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Sharpe Ratio</div>
+                <div class="kpi-value">@Model.SharpeRatio.ToString("N2")</div>
+                <div class="kpi-sub" style="color:var(--text-secondary);">Risk-adjusted</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:var(--red-dim); color:var(--red);">D</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Max Drawdown</div>
+                <div class="kpi-value text-red">@Model.MaxDrawdown.ToString("N1")%</div>
+                <div class="kpi-sub" style="color:var(--text-secondary);">Peak to trough</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(188,140,255,0.15); color:var(--purple);">W</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Win Rate</div>
+                <div class="kpi-value">@Model.WinRate.ToString("N1")%</div>
+                <div class="kpi-sub" style="color:var(--text-secondary);">@Model.TotalTrades trades</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equity Curve Chart -->
+    <div class="panel-header" style="margin-top:20px;">
+        <span class="panel-title">Equity Curve</span>
+        <div class="timeframes">
+            <button>1M</button>
+            <button>3M</button>
+            <button>6M</button>
+            <button class="active">1Y</button>
+            <button>All</button>
+        </div>
+    </div>
+    <div class="equity-chart" id="equityChartContainer">
+        <canvas id="equityChart"></canvas>
+    </div>
+
+    <!-- Monthly Returns Heatmap -->
+    <div class="panel-header" style="margin-top:20px;">
+        <span class="panel-title">Monthly Returns</span>
+    </div>
+    <div class="monthly-returns">
+        @foreach (var mr in Model.MonthlyReturns)
+        {
+            var barCls = mr.ReturnPercent >= 0 ? "bar-green" : "bar-red";
+            var sign = mr.ReturnPercent >= 0 ? "+" : "";
+            <div class="monthly-bar-item">
+                <div class="monthly-bar-container">
+                    @if (mr.ReturnPercent >= 0)
+                    {
+                        <div class="monthly-bar-negative"></div>
+                        <div class="monthly-bar-positive @barCls" style="height:@(Math.Abs((double)mr.ReturnPercent) * 12)px;"></div>
+                    }
+                    else
+                    {
+                        <div class="monthly-bar-negative @barCls" style="height:@(Math.Abs((double)mr.ReturnPercent) * 12)px;"></div>
+                        <div class="monthly-bar-positive"></div>
+                    }
+                </div>
+                <div class="monthly-label">@mr.Month</div>
+                <div class="monthly-value @(mr.ReturnPercent >= 0 ? "text-green" : "text-red")">@(sign)@mr.ReturnPercent.ToString("N1")%</div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Analytics Sidebar -->
+<div class="panel analytics-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Trade Metrics</span>
+    </div>
+    <div class="order-summary">
+        <div class="order-summary-row"><span>Total Trades</span><span>@Model.TotalTrades</span></div>
+        <div class="order-summary-row"><span>Win Rate</span><span class="text-green">@Model.WinRate.ToString("N1")%</span></div>
+        <div class="order-summary-row"><span>Best Trade</span><span class="text-green">+$@Model.BestTrade.ToString("N2")</span></div>
+        <div class="order-summary-row"><span>Worst Trade</span><span class="text-red">-$@Math.Abs(Model.WorstTrade).ToString("N2")</span></div>
+        <div class="order-summary-row"><span>Avg Hold Time</span><span>@Model.AvgHoldTime.ToString("N1") days</span></div>
+        <div class="order-summary-row"><span>Profit Factor</span><span>2.22</span></div>
+    </div>
+
+    <!-- Top Performers -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Top Performers</div>
+        <table class="compact-table">
+            <thead>
+                <tr><th>Symbol</th><th>Trades</th><th>P&amp;L</th><th>Win%</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var tp in Model.TopPerformers)
+                {
+                    var cls = tp.TotalPnL >= 0 ? "text-green" : "text-red";
+                    var sign = tp.TotalPnL >= 0 ? "+" : "";
+                    <tr>
+                        <td><strong>@tp.Symbol</strong></td>
+                        <td>@tp.Trades</td>
+                        <td class="@cls">@(sign)$@Math.Abs(tp.TotalPnL).ToString("N0")</td>
+                        <td>@tp.WinRate.ToString("N0")%</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Risk Metrics -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Risk Metrics</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Sharpe Ratio</span><span>@Model.SharpeRatio.ToString("N2")</span></div>
+            <div class="order-summary-row"><span>Sortino Ratio</span><span>2.41</span></div>
+            <div class="order-summary-row"><span>Max Drawdown</span><span class="text-red">@Model.MaxDrawdown.ToString("N1")%</span></div>
+            <div class="order-summary-row"><span>Volatility</span><span>12.4%</span></div>
+            <div class="order-summary-row"><span>Beta</span><span>1.12</span></div>
+            <div class="order-summary-row"><span>Alpha</span><span class="text-green">+4.8%</span></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function() {
+    const canvas = document.getElementById('equityChart');
+    const container = document.getElementById('equityChartContainer');
+    if (!canvas || !container) return;
+
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+    const ctx = canvas.getContext('2d');
+
+    function drawEquityCurve() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const w = canvas.width;
+        const h = canvas.height;
+        const padding = { top: 15, right: 55, bottom: 25, left: 10 };
+        const chartW = w - padding.left - padding.right;
+        const chartH = h - padding.top - padding.bottom;
+
+        // Generate equity curve data
+        const points = 52; // weekly over 1 year
+        let equity = [100000];
+        let seed = 77;
+        function rng() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+
+        for (let i = 1; i < points; i++) {
+            const change = (rng() - 0.38) * 3200;
+            equity.push(Math.max(equity[i-1] + change, equity[0] * 0.85));
+        }
+
+        const minVal = Math.min(...equity) - 2000;
+        const maxVal = Math.max(...equity) + 2000;
+        const range = maxVal - minVal;
+
+        const getX = (i) => padding.left + (i / (points - 1)) * chartW;
+        const getY = (v) => padding.top + (1 - (v - minVal) / range) * chartH;
+
+        // Grid
+        ctx.strokeStyle = '#21262d';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+            const y = padding.top + (i / 4) * chartH;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(w - padding.right, y);
+            ctx.stroke();
+            const label = ((maxVal - (i / 4) * range) / 1000).toFixed(0) + 'K';
+            ctx.fillStyle = '#8b949e';
+            ctx.font = '10px -apple-system, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('$' + label, w - padding.right + 6, y + 4);
+        }
+
+        // Area
+        const gradient = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
+        gradient.addColorStop(0, 'rgba(88, 166, 255, 0.12)');
+        gradient.addColorStop(1, 'rgba(88, 166, 255, 0.0)');
+        ctx.beginPath();
+        ctx.moveTo(getX(0), h - padding.bottom);
+        for (let i = 0; i < points; i++) ctx.lineTo(getX(i), getY(equity[i]));
+        ctx.lineTo(getX(points - 1), h - padding.bottom);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Line
+        ctx.beginPath();
+        ctx.moveTo(getX(0), getY(equity[0]));
+        for (let i = 1; i < points; i++) ctx.lineTo(getX(i), getY(equity[i]));
+        ctx.strokeStyle = '#58a6ff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Endpoint
+        const lastY = getY(equity[points - 1]);
+        const lastX = getX(points - 1);
+        ctx.beginPath();
+        ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#58a6ff';
+        ctx.fill();
+
+        // Month labels
+        const months = ['Jun', 'Aug', 'Oct', 'Dec', 'Feb', 'Apr', 'May'];
+        ctx.fillStyle = '#8b949e';
+        ctx.font = '10px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        months.forEach((m, i) => {
+            const x = padding.left + (i / (months.length - 1)) * chartW;
+            ctx.fillText(m, x, h - 6);
+        });
+    }
+
+    drawEquityCurve();
+    window.addEventListener('resize', function() {
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+        drawEquityCurve();
+    });
+})();
+</script>
+}

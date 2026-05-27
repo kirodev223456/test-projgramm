@@ -1,0 +1,159 @@
+@model PortfolioViewModel
+@{
+    ViewData["Title"] = "Portfolio";
+    ViewData["ActivePage"] = "Portfolio";
+}
+
+<!-- Portfolio Overview & Holdings -->
+<div class="panel portfolio-main">
+    <!-- Summary Cards -->
+    <div class="portfolio-cards">
+        <div class="stat-card">
+            <div class="stat-label">Total Portfolio Value</div>
+            <div class="stat-value">$@Model.TotalValue.ToString("N2")</div>
+            <div class="stat-change @(Model.DayChangePercent >= 0 ? "text-green" : "text-red")">
+                @(Model.DayChangePercent >= 0 ? "+" : "")$@Model.DayChange.ToString("N2") today
+                (@(Model.DayChangePercent >= 0 ? "+" : "")@Model.DayChangePercent.ToString("N2")%)
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total P&amp;L</div>
+            <div class="stat-value @(Model.TotalPnL >= 0 ? "text-green" : "text-red")">
+                @(Model.TotalPnL >= 0 ? "+" : "")$@Model.TotalPnL.ToString("N2")
+            </div>
+            <div class="stat-change @(Model.TotalPnLPercent >= 0 ? "text-green" : "text-red")">
+                @(Model.TotalPnLPercent >= 0 ? "+" : "")@Model.TotalPnLPercent.ToString("N2")% all time
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Cash Balance</div>
+            <div class="stat-value">$@Model.CashBalance.ToString("N2")</div>
+            <div class="stat-change" style="color:var(--text-secondary);">Available to trade</div>
+        </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="panel-header" style="margin-top:20px;">
+        <span class="panel-title">Holdings</span>
+        <span style="font-size:12px; color:var(--text-secondary);">@Model.Holdings.Count positions</span>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Company</th>
+                <th>Shares</th>
+                <th>Avg Cost</th>
+                <th>Price</th>
+                <th>Market Value</th>
+                <th>P&amp;L</th>
+                <th>P&amp;L %</th>
+                <th>Day</th>
+                <th>Weight</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var h in Model.Holdings)
+            {
+                var pnlCls = h.PnL >= 0 ? "text-green" : "text-red";
+                var pnlSign = h.PnL >= 0 ? "+" : "";
+                var dayCls = h.DayChange >= 0 ? "text-green" : "text-red";
+                var daySign = h.DayChange >= 0 ? "+" : "";
+                <tr>
+                    <td><strong>@h.Symbol</strong></td>
+                    <td style="color:var(--text-secondary)">@h.CompanyName</td>
+                    <td>@h.Shares</td>
+                    <td>$@h.AvgCost.ToString("N2")</td>
+                    <td>$@h.CurrentPrice.ToString("N2")</td>
+                    <td>$@h.MarketValue.ToString("N2")</td>
+                    <td class="@pnlCls">@(pnlSign)$@Math.Abs(h.PnL).ToString("N2")</td>
+                    <td class="@pnlCls">@(pnlSign)@Math.Abs(h.PnLPercent).ToString("N2")%</td>
+                    <td class="@dayCls">@(daySign)@h.DayChangePercent.ToString("N2")%</td>
+                    <td>@h.Weight.ToString("N1")%</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr style="border-top: 2px solid var(--border); font-weight:600;">
+                <td colspan="5">Total</td>
+                <td>$@Model.Holdings.Sum(h => h.MarketValue).ToString("N2")</td>
+                <td class="@(Model.TotalPnL >= 0 ? "text-green" : "text-red")">
+                    @(Model.TotalPnL >= 0 ? "+" : "")$@Model.TotalPnL.ToString("N2")
+                </td>
+                <td class="@(Model.TotalPnLPercent >= 0 ? "text-green" : "text-red")">
+                    @(Model.TotalPnLPercent >= 0 ? "+" : "")@Model.TotalPnLPercent.ToString("N2")%
+                </td>
+                <td class="@(Model.DayChangePercent >= 0 ? "text-green" : "text-red")">
+                    @(Model.DayChangePercent >= 0 ? "+" : "")@Model.DayChangePercent.ToString("N2")%
+                </td>
+                <td>100%</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<!-- Allocation Sidebar -->
+<div class="panel portfolio-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Allocation</span>
+    </div>
+
+    <!-- Donut Chart Placeholder -->
+    <div class="donut-chart">
+        <svg viewBox="0 0 120 120" class="donut-svg">
+            @{
+                double offset = 0;
+                foreach (var alloc in Model.Allocations)
+                {
+                    double pct = (double)alloc.Percentage;
+                    double dashArray = pct * 3.14159;
+                    double dashOffset = -offset * 3.14159;
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="@alloc.Color" stroke-width="14"
+                            stroke-dasharray="@dashArray 314.159"
+                            stroke-dashoffset="@dashOffset"
+                            style="transform: rotate(-90deg); transform-origin: center;" />
+                    offset += pct;
+                }
+            }
+        </svg>
+        <div class="donut-center">
+            <div style="font-size:18px; font-weight:700;">7</div>
+            <div style="font-size:11px; color:var(--text-secondary);">Holdings</div>
+        </div>
+    </div>
+
+    <!-- Allocation List -->
+    <div class="allocation-list">
+        @foreach (var alloc in Model.Allocations)
+        {
+            <div class="allocation-item">
+                <div class="alloc-left">
+                    <div class="alloc-dot" style="background: @alloc.Color;"></div>
+                    <span>@alloc.Sector</span>
+                </div>
+                <span style="font-weight:600;">@alloc.Percentage.ToString("N1")%</span>
+            </div>
+        }
+    </div>
+
+    <!-- Performance Summary -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Performance</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Today</span><span class="text-green">+1.04%</span></div>
+            <div class="order-summary-row"><span>This Week</span><span class="text-green">+2.87%</span></div>
+            <div class="order-summary-row"><span>This Month</span><span class="text-green">+5.42%</span></div>
+            <div class="order-summary-row"><span>YTD</span><span class="text-green">+17.36%</span></div>
+            <div class="order-summary-row"><span>1 Year</span><span class="text-green">+24.18%</span></div>
+        </div>
+    </div>
+
+    <!-- Top/Bottom -->
+    <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Best &amp; Worst Today</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Best</span><span class="text-green">NVDA +2.03%</span></div>
+            <div class="order-summary-row"><span>Worst</span><span class="text-red">TSLA -1.66%</span></div>
+        </div>
+    </div>
+</div>

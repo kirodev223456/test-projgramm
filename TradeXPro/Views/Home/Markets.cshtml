@@ -1,0 +1,153 @@
+@model MarketsViewModel
+@{
+    ViewData["Title"] = "Markets";
+    ViewData["ActivePage"] = "Markets";
+}
+
+<!-- Market Indices & Main Content -->
+<div class="panel markets-main">
+    <!-- Index Ticker Bar -->
+    <div class="index-bar">
+        @foreach (var idx in Model.Indices)
+        {
+            var cls = idx.Change >= 0 ? "text-green" : "text-red";
+            var sign = idx.Change >= 0 ? "+" : "";
+            <div class="index-card">
+                <div class="index-name">@idx.Name</div>
+                <div class="index-value">@idx.Value.ToString("N2")</div>
+                <div class="@cls" style="font-size:12px;">@(sign)@idx.Change.ToString("N2") (@(sign)@idx.ChangePercent.ToString("N2")%)</div>
+            </div>
+        }
+    </div>
+
+    <!-- Tabs: Gainers / Losers / Most Active -->
+    <div class="tab-row">
+        <button class="active" onclick="showMarketTab('gainers')">Top Gainers</button>
+        <button onclick="showMarketTab('losers')">Top Losers</button>
+        <button onclick="showMarketTab('active')">Most Active</button>
+    </div>
+
+    <!-- Gainers Table -->
+    <div id="tab-gainers" class="market-tab-content">
+        <table>
+            <thead>
+                <tr><th>Symbol</th><th>Company</th><th>Price</th><th>Change</th><th>% Change</th><th>Volume</th><th>Market Cap</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var stock in Model.TopGainers)
+                {
+                    <tr>
+                        <td><strong>@stock.Symbol</strong></td>
+                        <td style="color:var(--text-secondary)">@stock.CompanyName</td>
+                        <td>$@stock.Price.ToString("N2")</td>
+                        <td class="text-green">+$@stock.Change.ToString("N2")</td>
+                        <td class="text-green">+@stock.ChangePercent.ToString("N2")%</td>
+                        <td>@stock.Volume</td>
+                        <td>@stock.MarketCap</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Losers Table -->
+    <div id="tab-losers" class="market-tab-content" style="display:none;">
+        <table>
+            <thead>
+                <tr><th>Symbol</th><th>Company</th><th>Price</th><th>Change</th><th>% Change</th><th>Volume</th><th>Market Cap</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var stock in Model.TopLosers)
+                {
+                    <tr>
+                        <td><strong>@stock.Symbol</strong></td>
+                        <td style="color:var(--text-secondary)">@stock.CompanyName</td>
+                        <td>$@stock.Price.ToString("N2")</td>
+                        <td class="text-red">-$@Math.Abs(stock.Change).ToString("N2")</td>
+                        <td class="text-red">@stock.ChangePercent.ToString("N2")%</td>
+                        <td>@stock.Volume</td>
+                        <td>@stock.MarketCap</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Most Active Table -->
+    <div id="tab-active" class="market-tab-content" style="display:none;">
+        <table>
+            <thead>
+                <tr><th>Symbol</th><th>Company</th><th>Price</th><th>Change</th><th>% Change</th><th>Volume</th><th>Market Cap</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var stock in Model.MostActive)
+                {
+                    var cls = stock.Change >= 0 ? "text-green" : "text-red";
+                    var sign = stock.Change >= 0 ? "+" : "";
+                    <tr>
+                        <td><strong>@stock.Symbol</strong></td>
+                        <td style="color:var(--text-secondary)">@stock.CompanyName</td>
+                        <td>$@stock.Price.ToString("N2")</td>
+                        <td class="@cls">@(sign)$@Math.Abs(stock.Change).ToString("N2")</td>
+                        <td class="@cls">@(sign)@stock.ChangePercent.ToString("N2")%</td>
+                        <td>@stock.Volume</td>
+                        <td>@stock.MarketCap</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Sector Performance Sidebar -->
+<div class="panel markets-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Sector Performance</span>
+    </div>
+    <table class="sector-table">
+        <thead>
+            <tr><th>Sector</th><th>Today</th><th>Week</th><th>Month</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var sector in Model.Sectors)
+            {
+                var todayCls = sector.ChangePercent >= 0 ? "text-green" : "text-red";
+                var weekCls = sector.WeekChange >= 0 ? "text-green" : "text-red";
+                var monthCls = sector.MonthChange >= 0 ? "text-green" : "text-red";
+                var tSign = sector.ChangePercent >= 0 ? "+" : "";
+                var wSign = sector.WeekChange >= 0 ? "+" : "";
+                var mSign = sector.MonthChange >= 0 ? "+" : "";
+                <tr>
+                    <td>@sector.Name</td>
+                    <td class="@todayCls">@(tSign)@sector.ChangePercent.ToString("N2")%</td>
+                    <td class="@weekCls">@(wSign)@sector.WeekChange.ToString("N2")%</td>
+                    <td class="@monthCls">@(mSign)@sector.MonthChange.ToString("N2")%</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div style="margin-top:20px;">
+        <div class="panel-title" style="margin-bottom:12px;">Market Summary</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Advancers</span><span class="text-green">1,842</span></div>
+            <div class="order-summary-row"><span>Decliners</span><span class="text-red">1,156</span></div>
+            <div class="order-summary-row"><span>Unchanged</span><span>312</span></div>
+            <div class="order-summary-row"><span>52-Week Highs</span><span class="text-green">87</span></div>
+            <div class="order-summary-row"><span>52-Week Lows</span><span class="text-red">24</span></div>
+            <div class="order-summary-row"><span>VIX</span><span>14.82</span></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function showMarketTab(tab) {
+    document.querySelectorAll('.market-tab-content').forEach(el => el.style.display = 'none');
+    document.getElementById('tab-' + tab).style.display = 'block';
+    const btns = document.querySelectorAll('.markets-main .tab-row button');
+    btns.forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+</script>
+}

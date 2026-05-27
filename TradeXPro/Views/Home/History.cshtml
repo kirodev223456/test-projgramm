@@ -1,0 +1,165 @@
+@model HistoryViewModel
+@{
+    ViewData["Title"] = "History";
+    ViewData["ActivePage"] = "History";
+}
+
+<!-- Trade History Main -->
+<div class="panel history-main">
+    <!-- Summary Stats -->
+    <div class="portfolio-cards">
+        <div class="stat-card">
+            <div class="stat-label">Realized P&amp;L</div>
+            <div class="stat-value @(Model.TotalRealized >= 0 ? "text-green" : "text-red")">
+                @(Model.TotalRealized >= 0 ? "+" : "")$@Model.TotalRealized.ToString("N2")
+            </div>
+            <div class="stat-change" style="color:var(--text-secondary);">All time closed trades</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Win Rate</div>
+            <div class="stat-value">@Model.WinRate.ToString("N1")%</div>
+            <div class="stat-change" style="color:var(--text-secondary);">@Model.WinCount W / @Model.LossCount L</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Avg Win / Avg Loss</div>
+            <div class="stat-value">
+                <span class="text-green">$@Model.AvgWin.ToString("N2")</span>
+                <span style="color:var(--text-secondary); font-size:16px;"> / </span>
+                <span class="text-red">$@Math.Abs(Model.AvgLoss).ToString("N2")</span>
+            </div>
+            <div class="stat-change" style="color:var(--text-secondary);">Profit factor: @((Model.AvgWin / Math.Abs(Model.AvgLoss)).ToString("N2"))</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="history-filters">
+        <div class="filter-group">
+            <label>Symbol</label>
+            <input type="text" placeholder="All symbols" />
+        </div>
+        <div class="filter-group">
+            <label>Type</label>
+            <select>
+                <option>All</option>
+                <option>Buy</option>
+                <option>Sell</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Status</label>
+            <select>
+                <option>All</option>
+                <option>Filled</option>
+                <option>Cancelled</option>
+                <option>Pending</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Period</label>
+            <select>
+                <option>Last 7 days</option>
+                <option>Last 30 days</option>
+                <option>Last 90 days</option>
+                <option>All time</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Trade History Table -->
+    <div class="panel-header">
+        <span class="panel-title">Trade History</span>
+        <span style="font-size:12px; color:var(--text-secondary);">@Model.Trades.Count trades</span>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date &amp; Time</th>
+                <th>Symbol</th>
+                <th>Side</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Realized P&amp;L</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var trade in Model.Trades)
+            {
+                var sideCls = trade.Type == "Buy" ? "trade-buy" : "trade-sell";
+                var statusCls = trade.Status == "Filled" ? "status-filled" : trade.Status == "Cancelled" ? "status-cancelled" : "status-pending";
+                <tr>
+                    <td style="color:var(--text-secondary);">@trade.Date.ToString("MMM dd, yyyy HH:mm")</td>
+                    <td><strong>@trade.Symbol</strong></td>
+                    <td><span class="trade-badge @sideCls">@trade.Type</span></td>
+                    <td>@trade.Quantity</td>
+                    <td>$@trade.Price.ToString("N2")</td>
+                    <td>$@trade.Total.ToString("N2")</td>
+                    <td><span class="status-badge @statusCls">@trade.Status</span></td>
+                    <td>
+                        @if (trade.RealizedPnL.HasValue)
+                        {
+                            var pnlCls = trade.RealizedPnL.Value >= 0 ? "text-green" : "text-red";
+                            var pnlSign = trade.RealizedPnL.Value >= 0 ? "+" : "";
+                            <span class="@pnlCls">@(pnlSign)$@Math.Abs(trade.RealizedPnL.Value).ToString("N2")</span>
+                        }
+                        else
+                        {
+                            <span style="color:var(--text-secondary);">—</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- History Sidebar -->
+<div class="panel history-sidebar">
+    <div class="panel-header">
+        <span class="panel-title">Trade Stats</span>
+    </div>
+    <div class="order-summary">
+        <div class="order-summary-row"><span>Total Trades</span><span>@Model.Trades.Count</span></div>
+        <div class="order-summary-row"><span>Buys</span><span>@Model.Trades.Count(t => t.Type == "Buy")</span></div>
+        <div class="order-summary-row"><span>Sells</span><span>@Model.Trades.Count(t => t.Type == "Sell")</span></div>
+        <div class="order-summary-row"><span>Filled</span><span class="text-green">@Model.Trades.Count(t => t.Status == "Filled")</span></div>
+        <div class="order-summary-row"><span>Cancelled</span><span class="text-red">@Model.Trades.Count(t => t.Status == "Cancelled")</span></div>
+    </div>
+
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Volume by Symbol</div>
+        @{
+            var symbolGroups = Model.Trades
+                .Where(t => t.Status == "Filled")
+                .GroupBy(t => t.Symbol)
+                .Select(g => new { Symbol = g.Key, Total = g.Sum(t => t.Total) })
+                .OrderByDescending(x => x.Total)
+                .Take(6);
+            var maxTotal = symbolGroups.Any() ? symbolGroups.Max(x => x.Total) : 1;
+        }
+        @foreach (var sg in symbolGroups)
+        {
+            var barWidth = (double)sg.Total / (double)maxTotal * 100;
+            <div class="volume-bar-item">
+                <div class="volume-bar-header">
+                    <span style="font-weight:600; font-size:13px;">@sg.Symbol</span>
+                    <span style="font-size:12px; color:var(--text-secondary);">$@sg.Total.ToString("N0")</span>
+                </div>
+                <div class="volume-bar-track">
+                    <div class="volume-bar-fill" style="width:@barWidth.ToString("N0")%;"></div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="panel-title" style="margin-bottom:12px;">Recent Activity</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Today</span><span>2 trades</span></div>
+            <div class="order-summary-row"><span>This Week</span><span>8 trades</span></div>
+            <div class="order-summary-row"><span>This Month</span><span>14 trades</span></div>
+            <div class="order-summary-row"><span>Avg/Day</span><span>2.3 trades</span></div>
+        </div>
+    </div>
+</div>

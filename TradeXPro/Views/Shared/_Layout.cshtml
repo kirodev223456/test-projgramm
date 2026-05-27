@@ -14,11 +14,11 @@
             <div class="header-left">
                 <div class="logo">TradeX Pro</div>
                 <nav class="nav">
-                    <a asp-controller="Home" asp-action="Index" class="active">Dashboard</a>
-                    <a href="#">Markets</a>
-                    <a href="#">Portfolio</a>
-                    <a href="#">History</a>
-                    <a href="#">Analytics</a>
+                    <a asp-controller="Home" asp-action="Index" class="@(ViewData["ActivePage"] == null ? "active" : "")">Dashboard</a>
+                    <a asp-controller="Home" asp-action="Markets" class="@(ViewData["ActivePage"]?.ToString() == "Markets" ? "active" : "")">Markets</a>
+                    <a asp-controller="Home" asp-action="Portfolio" class="@(ViewData["ActivePage"]?.ToString() == "Portfolio" ? "active" : "")">Portfolio</a>
+                    <a asp-controller="Home" asp-action="History" class="@(ViewData["ActivePage"]?.ToString() == "History" ? "active" : "")">History</a>
+                    <a asp-controller="Home" asp-action="Analytics" class="@(ViewData["ActivePage"]?.ToString() == "Analytics" ? "active" : "")">Analytics</a>
                 </nav>
             </div>
             <div class="header-right">
@@ -28,7 +28,7 @@
         </header>
 
         <!-- Main Content -->
-        <div class="main">
+        <div class="main @(ViewData["ActivePage"] != null ? "main-fullpage" : "")">
             @RenderBody()
         </div>
     </div>
