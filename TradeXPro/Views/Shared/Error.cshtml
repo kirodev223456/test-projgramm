@@ -1,0 +1,16 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="panel" style="grid-column: 1 / -1; grid-row: 1 / -1; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+    <h1 style="color: var(--red); font-size: 24px; margin-bottom: 12px;">Error</h1>
+    <h2 style="color: var(--text-secondary); font-size: 16px;">An error occurred while processing your request.</h2>
+
+    @if (Model?.ShowRequestId ?? false)
+    {
+        <p style="margin-top: 16px; color: var(--text-secondary); font-size: 13px;">
+            <strong>Request ID:</strong> <code>@Model?.RequestId</code>
+        </p>
+    }
+</div>

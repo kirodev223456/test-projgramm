@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TradeX Pro</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">TradeX Pro</div>
+                <nav class="nav">
+                    <a asp-controller="Home" asp-action="Index" class="active">Dashboard</a>
+                    <a href="#">Markets</a>
+                    <a href="#">Portfolio</a>
+                    <a href="#">History</a>
+                    <a href="#">Analytics</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="balance" id="accountBalance">$124,563.82</div>
+                <div class="avatar">JD</div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main">
+            @RenderBody()
+        </div>
+    </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

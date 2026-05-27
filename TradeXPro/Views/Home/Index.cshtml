@@ -1,0 +1,138 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Chart Panel -->
+<div class="panel chart-panel">
+    <div class="chart-toolbar">
+        <div class="ticker-info">
+            <span class="ticker-symbol">@Model.CurrentTicker.Symbol</span>
+            <span class="ticker-price">$@Model.CurrentTicker.Price.ToString("N2")</span>
+            <span class="ticker-change @(Model.CurrentTicker.Change >= 0 ? "up" : "down")">
+                @(Model.CurrentTicker.Change >= 0 ? "+" : "")@Model.CurrentTicker.Change.ToString("N2")
+                (@(Model.CurrentTicker.ChangePercent >= 0 ? "+" : "")@Model.CurrentTicker.ChangePercent.ToString("N2")%)
+            </span>
+        </div>
+        <div class="timeframes">
+            <button>1m</button>
+            <button>5m</button>
+            <button>15m</button>
+            <button class="active">1H</button>
+            <button>4H</button>
+            <button>1D</button>
+            <button>1W</button>
+        </div>
+    </div>
+    <div class="chart-canvas" id="chartCanvas">
+        <canvas id="priceChart"></canvas>
+    </div>
+</div>
+
+<!-- Order Panel -->
+<div class="panel order-panel">
+    <div class="panel-header">
+        <span class="panel-title">Place Order</span>
+    </div>
+    <div class="order-tabs">
+        <button class="buy-tab">Buy</button>
+        <button class="sell-tab">Sell</button>
+    </div>
+    <div class="form-group">
+        <label>Order Type</label>
+        <select>
+            <option>Market Order</option>
+            <option>Limit Order</option>
+            <option>Stop Loss</option>
+            <option>Stop Limit</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Quantity (shares)</label>
+        <input type="number" value="10" />
+    </div>
+    <div class="form-group">
+        <label>Price</label>
+        <input type="text" value="$@Model.CurrentTicker.Price.ToString("N2")" />
+    </div>
+    <div class="order-summary">
+        <div class="order-summary-row"><span>Subtotal</span><span>$@((Model.CurrentTicker.Price * 10).ToString("N2"))</span></div>
+        <div class="order-summary-row"><span>Commission</span><span>$0.00</span></div>
+        <div class="order-summary-row"><span>Estimated Total</span><span style="font-weight:600">$@((Model.CurrentTicker.Price * 10).ToString("N2"))</span></div>
+    </div>
+    <button class="btn-order">Buy @Model.CurrentTicker.Symbol</button>
+
+    <div class="quick-stats">
+        <div class="panel-title" style="margin-bottom:12px;">Quick Stats</div>
+        <div class="order-summary">
+            <div class="order-summary-row"><span>Day High</span><span>$@Model.CurrentTicker.DayHigh.ToString("N2")</span></div>
+            <div class="order-summary-row"><span>Day Low</span><span>$@Model.CurrentTicker.DayLow.ToString("N2")</span></div>
+            <div class="order-summary-row"><span>Volume</span><span>@Model.CurrentTicker.Volume</span></div>
+            <div class="order-summary-row"><span>Avg Volume</span><span>@Model.CurrentTicker.AvgVolume</span></div>
+            <div class="order-summary-row"><span>Market Cap</span><span>@Model.CurrentTicker.MarketCap</span></div>
+            <div class="order-summary-row"><span>P/E Ratio</span><span>@Model.CurrentTicker.PERatio.ToString("N1")</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Left: Positions & Orders -->
+<div class="panel bottom-left">
+    <div class="tab-row">
+        <button class="active">Positions</button>
+        <button>Open Orders</button>
+        <button>Trade History</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Qty</th>
+                <th>Avg Cost</th>
+                <th>Current</th>
+                <th>P&amp;L</th>
+                <th>P&amp;L %</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var position in Model.Positions)
+            {
+                var pnlClass = position.PnL >= 0 ? "text-green" : "text-red";
+                var pnlSign = position.PnL >= 0 ? "+" : "";
+                <tr>
+                    <td><strong>@position.Symbol</strong></td>
+                    <td>@position.Quantity</td>
+                    <td>$@position.AvgCost.ToString("N2")</td>
+                    <td>$@position.CurrentPrice.ToString("N2")</td>
+                    <td class="@pnlClass">@(pnlSign)$@Math.Abs(position.PnL).ToString("N2")</td>
+                    <td class="@pnlClass">@(pnlSign)@Math.Abs(position.PnLPercent).ToString("N2")%</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Bottom Right: Watchlist -->
+<div class="panel bottom-right">
+    <div class="panel-header">
+        <span class="panel-title">Watchlist</span>
+    </div>
+    @foreach (var item in Model.Watchlist)
+    {
+        var changeClass = item.ChangePercent >= 0 ? "text-green" : "text-red";
+        var changeSign = item.ChangePercent >= 0 ? "+" : "";
+        <div class="watchlist-item">
+            <div>
+                <div class="wl-symbol">@item.Symbol</div>
+                <div class="wl-name">@item.CompanyName</div>
+            </div>
+            <div class="wl-price">
+                <div class="wl-price-val">$@item.Price.ToString("N2")</div>
+                <div class="wl-change @changeClass">@(changeSign)@Math.Abs(item.ChangePercent).ToString("N2")%</div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/chart.js" asp-append-version="true"></script>
+}
