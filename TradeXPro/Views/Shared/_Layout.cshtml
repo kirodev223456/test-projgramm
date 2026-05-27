@@ -4,6 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TradeX Pro</title>
+    <script>
+        // Apply theme immediately to prevent flash of wrong theme
+        (function() {
+            var theme = localStorage.getItem('tradexpro-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -27,6 +34,10 @@
             </div>
             <div class="header-right">
                 <div class="balance" id="accountBalance">$124,563.82</div>
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                    <span class="icon-moon">&#9790;</span>
+                    <span class="icon-sun">&#9728;</span>
+                </button>
                 <a asp-controller="Home" asp-action="Account" class="header-icon-link" title="Account">
                     <div class="header-icon">&#9733;</div>
                 </a>

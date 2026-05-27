@@ -1,7 +1,30 @@
 // TradeX Pro - Site-wide JavaScript
 
-// Tab switching functionality
+// ==========================================
+// THEME MANAGEMENT
+// ==========================================
+(function () {
+    // Apply saved theme immediately to prevent flash
+    const savedTheme = localStorage.getItem('tradexpro-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+})();
+
 document.addEventListener('DOMContentLoaded', function () {
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('tradexpro-theme', newTheme);
+        });
+    }
+
+    // ==========================================
+    // TAB & UI INTERACTIONS
+    // ==========================================
+
     // Order tabs (Buy/Sell)
     const orderTabs = document.querySelectorAll('.order-tabs button');
     const btnOrder = document.querySelector('.btn-order');
@@ -20,7 +43,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.style.color = '#fff';
                 if (btnOrder) {
                     btnOrder.style.background = 'var(--green)';
-                    btnOrder.textContent = 'Buy ' + document.querySelector('.ticker-symbol').textContent;
+                    const ticker = document.querySelector('.ticker-symbol');
+                    btnOrder.textContent = 'Buy ' + (ticker ? ticker.textContent : '');
                 }
             } else {
                 this.classList.add('sell-tab');
@@ -28,7 +52,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.style.color = '#fff';
                 if (btnOrder) {
                     btnOrder.style.background = 'var(--red)';
-                    btnOrder.textContent = 'Sell ' + document.querySelector('.ticker-symbol').textContent;
+                    const ticker = document.querySelector('.ticker-symbol');
+                    btnOrder.textContent = 'Sell ' + (ticker ? ticker.textContent : '');
                 }
             }
         });
@@ -52,6 +77,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 buttons.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
             });
+        });
+    });
+
+    // Toggle switches
+    const toggleSwitches = document.querySelectorAll('.toggle-switch');
+    toggleSwitches.forEach(toggle => {
+        toggle.addEventListener('click', function () {
+            this.classList.toggle('active');
         });
     });
 });
