@@ -64,7 +64,7 @@
                         <td>
                             <div class="alert-actions">
                                 <button class="btn-sm btn-secondary">Modify</button>
-                                <button class="btn-sm btn-danger-sm">Cancel</button>
+                                <button class="btn-sm btn-danger-sm" data-delete-btn data-delete-message="Cancel this order?">Cancel</button>
                             </div>
                         </td>
                     </tr>
@@ -97,7 +97,7 @@
                         <td style="color:var(--text-secondary)">@order.CreatedAt.ToString("HH:mm")</td>
                         <td>
                             <div class="alert-actions">
-                                <button class="btn-sm btn-danger-sm">Cancel Rest</button>
+                                <button class="btn-sm btn-danger-sm" data-delete-btn data-delete-message="Cancel this order?">Cancel Rest</button>
                             </div>
                         </td>
                     </tr>
