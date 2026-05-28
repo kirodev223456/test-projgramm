@@ -50,4 +50,30 @@ app.UseCors("WebClient");
 app.UseAuthorization();
 app.MapControllers();
 
+// Seed default admin user on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TradeXProDbContext>();
+    db.Database.EnsureCreated();
+
+    if (!db.Users.Any(u => u.Email == "admin@tradexpro.com"))
+    {
+        db.Users.Add(new User
+        {
+            Email = "admin@tradexpro.com",
+            PasswordHash = "Admin123!", // In production: use proper hashing (BCrypt, etc.)
+            FirstName = "John",
+            LastName = "Doe",
+            Phone = "+1 (555) 234-5678",
+            Timezone = "Eastern Time (UTC-5)",
+            Currency = "USD",
+            AccountType = "Premium",
+            TwoFactorEnabled = true,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        });
+        db.SaveChanges();
+    }
+}
+
 app.Run();
