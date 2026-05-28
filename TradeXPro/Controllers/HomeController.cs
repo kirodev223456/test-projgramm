@@ -1,35 +1,38 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TradeXPro.Models;
+using TradeXPro.Services;
 
 namespace TradeXPro.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly ApiService _api;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, ApiService api)
     {
         _logger = logger;
+        _api = api;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var model = new DashboardViewModel
+        try
+        {
+            var model = await _api.GetAsync<DashboardViewModel>("api/dashboard/index");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Index, using fallback"); }
+
+        var fallback = new DashboardViewModel
         {
             AccountBalance = 124563.82m,
             CurrentTicker = new TickerInfo
             {
-                Symbol = "AAPL",
-                Price = 189.84m,
-                Change = 2.34m,
-                ChangePercent = 1.25m,
-                DayHigh = 191.02m,
-                DayLow = 187.12m,
-                Volume = "48.2M",
-                AvgVolume = "52.1M",
-                MarketCap = "$2.94T",
-                PERatio = 31.2m
+                Symbol = "AAPL", Price = 189.84m, Change = 2.34m, ChangePercent = 1.25m,
+                DayHigh = 191.02m, DayLow = 187.12m, Volume = "48.2M", AvgVolume = "52.1M",
+                MarketCap = "$2.94T", PERatio = 31.2m
             },
             Positions = new List<Position>
             {
@@ -48,13 +51,20 @@ public class HomeController : Controller
                 new() { Symbol = "JPM", CompanyName = "JPMorgan Chase", Price = 198.55m, ChangePercent = -0.34m }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult Markets()
+
+    public async Task<IActionResult> Markets()
     {
-        var model = new MarketsViewModel
+        try
+        {
+            var model = await _api.GetAsync<MarketsViewModel>("api/dashboard/markets");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Markets, using fallback"); }
+
+        var fallback = new MarketsViewModel
         {
             Indices = new List<MarketIndex>
             {
@@ -99,20 +109,23 @@ public class HomeController : Controller
                 new() { Name = "Utilities", ChangePercent = -0.14m, WeekChange = 0.42m, MonthChange = 2.78m }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult Portfolio()
+
+    public async Task<IActionResult> Portfolio()
     {
-        var model = new PortfolioViewModel
+        try
         {
-            TotalValue = 124563.82m,
-            TotalPnL = 18421.00m,
-            TotalPnLPercent = 17.36m,
-            CashBalance = 24120.42m,
-            DayChange = 1284.50m,
-            DayChangePercent = 1.04m,
+            var model = await _api.GetAsync<PortfolioViewModel>("api/dashboard/portfolio");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Portfolio, using fallback"); }
+
+        var fallback = new PortfolioViewModel
+        {
+            TotalValue = 124563.82m, TotalPnL = 18421.00m, TotalPnLPercent = 17.36m,
+            CashBalance = 24120.42m, DayChange = 1284.50m, DayChangePercent = 1.04m,
             Holdings = new List<PortfolioHolding>
             {
                 new() { Symbol = "AAPL", CompanyName = "Apple Inc.", Shares = 50, AvgCost = 175.20m, CurrentPrice = 189.84m, DayChange = 2.34m, DayChangePercent = 1.25m, Weight = 15.2m },
@@ -131,26 +144,29 @@ public class HomeController : Controller
                 new() { Sector = "Cash", Percentage = 5.1m, Color = "#8b949e" }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult History()
+
+    public async Task<IActionResult> History()
     {
-        var model = new HistoryViewModel
+        try
         {
-            TotalRealized = 8542.30m,
-            WinCount = 24,
-            LossCount = 8,
-            AvgWin = 485.60m,
-            AvgLoss = -218.40m,
+            var model = await _api.GetAsync<HistoryViewModel>("api/dashboard/history");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for History, using fallback"); }
+
+        var fallback = new HistoryViewModel
+        {
+            TotalRealized = 8542.30m, WinCount = 24, LossCount = 8, AvgWin = 485.60m, AvgLoss = -218.40m,
             Trades = new List<TradeRecord>
             {
                 new() { Symbol = "NVDA", Type = "Buy", Quantity = 5, Price = 890.20m, Date = new DateTime(2025, 5, 26, 14, 32, 0), Status = "Filled", RealizedPnL = null },
                 new() { Symbol = "AAPL", Type = "Sell", Quantity = 10, Price = 191.50m, Date = new DateTime(2025, 5, 26, 11, 15, 0), Status = "Filled", RealizedPnL = 162.00m },
                 new() { Symbol = "MSFT", Type = "Buy", Quantity = 5, Price = 412.80m, Date = new DateTime(2025, 5, 25, 15, 45, 0), Status = "Filled", RealizedPnL = null },
                 new() { Symbol = "TSLA", Type = "Sell", Quantity = 10, Price = 252.30m, Date = new DateTime(2025, 5, 25, 10, 22, 0), Status = "Filled", RealizedPnL = -105.00m },
-                new() { Symbol = "AMD", Type = "Buy", Quantity = 20, Price = 158.90m, Date = new DateTime(2025, 5, 24, 13, 08, 0), Status = "Filled", RealizedPnL = null },
+                new() { Symbol = "AMD", Type = "Buy", Quantity = 20, Price = 158.90m, Date = new DateTime(2025, 5, 24, 13, 8, 0), Status = "Filled", RealizedPnL = null },
                 new() { Symbol = "AMD", Type = "Sell", Quantity = 20, Price = 164.20m, Date = new DateTime(2025, 5, 24, 15, 50, 0), Status = "Filled", RealizedPnL = 106.00m },
                 new() { Symbol = "GOOGL", Type = "Buy", Quantity = 15, Price = 170.40m, Date = new DateTime(2025, 5, 23, 9, 45, 0), Status = "Filled", RealizedPnL = null },
                 new() { Symbol = "META", Type = "Sell", Quantity = 5, Price = 498.60m, Date = new DateTime(2025, 5, 23, 14, 30, 0), Status = "Filled", RealizedPnL = 168.00m },
@@ -158,41 +174,36 @@ public class HomeController : Controller
                 new() { Symbol = "COIN", Type = "Sell", Quantity = 15, Price = 215.80m, Date = new DateTime(2025, 5, 22, 11, 55, 0), Status = "Filled", RealizedPnL = -87.00m },
                 new() { Symbol = "PLTR", Type = "Buy", Quantity = 50, Price = 22.40m, Date = new DateTime(2025, 5, 21, 9, 32, 0), Status = "Filled", RealizedPnL = null },
                 new() { Symbol = "PLTR", Type = "Sell", Quantity = 50, Price = 24.10m, Date = new DateTime(2025, 5, 21, 15, 48, 0), Status = "Filled", RealizedPnL = 85.00m },
-                new() { Symbol = "SMCI", Type = "Buy", Quantity = 3, Price = 845.60m, Date = new DateTime(2025, 5, 20, 10, 05, 0), Status = "Cancelled", RealizedPnL = null },
+                new() { Symbol = "SMCI", Type = "Buy", Quantity = 3, Price = 845.60m, Date = new DateTime(2025, 5, 20, 10, 5, 0), Status = "Cancelled", RealizedPnL = null },
                 new() { Symbol = "NFLX", Type = "Buy", Quantity = 8, Price = 620.30m, Date = new DateTime(2025, 5, 20, 13, 22, 0), Status = "Filled", RealizedPnL = null }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult Analytics()
+
+    public async Task<IActionResult> Analytics()
     {
-        var model = new AnalyticsViewModel
+        try
         {
-            TotalReturn = 18421.00m,
-            TotalReturnPercent = 17.36m,
-            SharpeRatio = 1.84m,
-            MaxDrawdown = -8.2m,
-            WinRate = 75.0m,
-            TotalTrades = 32,
-            BestTrade = 2840.00m,
-            WorstTrade = -1245.00m,
-            AvgHoldTime = 4.2m,
+            var model = await _api.GetAsync<AnalyticsViewModel>("api/dashboard/analytics");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Analytics, using fallback"); }
+
+        var fallback = new AnalyticsViewModel
+        {
+            TotalReturn = 18421.00m, TotalReturnPercent = 17.36m, SharpeRatio = 1.84m,
+            MaxDrawdown = -8.2m, WinRate = 75.0m, TotalTrades = 32,
+            BestTrade = 2840.00m, WorstTrade = -1245.00m, AvgHoldTime = 4.2m,
             MonthlyReturns = new List<MonthlyReturn>
             {
-                new() { Month = "Jan", ReturnPercent = 4.2m },
-                new() { Month = "Feb", ReturnPercent = -1.8m },
-                new() { Month = "Mar", ReturnPercent = 6.1m },
-                new() { Month = "Apr", ReturnPercent = 2.4m },
-                new() { Month = "May", ReturnPercent = 3.8m },
-                new() { Month = "Jun", ReturnPercent = -0.5m },
-                new() { Month = "Jul", ReturnPercent = 5.2m },
-                new() { Month = "Aug", ReturnPercent = -2.1m },
-                new() { Month = "Sep", ReturnPercent = 1.9m },
-                new() { Month = "Oct", ReturnPercent = 3.4m },
-                new() { Month = "Nov", ReturnPercent = -1.2m },
-                new() { Month = "Dec", ReturnPercent = 4.8m }
+                new() { Month = "Jan", ReturnPercent = 4.2m }, new() { Month = "Feb", ReturnPercent = -1.8m },
+                new() { Month = "Mar", ReturnPercent = 6.1m }, new() { Month = "Apr", ReturnPercent = 2.4m },
+                new() { Month = "May", ReturnPercent = 3.8m }, new() { Month = "Jun", ReturnPercent = -0.5m },
+                new() { Month = "Jul", ReturnPercent = 5.2m }, new() { Month = "Aug", ReturnPercent = -2.1m },
+                new() { Month = "Sep", ReturnPercent = 1.9m }, new() { Month = "Oct", ReturnPercent = 3.4m },
+                new() { Month = "Nov", ReturnPercent = -1.2m }, new() { Month = "Dec", ReturnPercent = 4.8m }
             },
             TopPerformers = new List<TopPerformer>
             {
@@ -203,29 +214,25 @@ public class HomeController : Controller
                 new() { Symbol = "TSLA", Trades = 6, TotalPnL = -1245.00m, WinRate = 33.3m }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult Settings()
+
+    public async Task<IActionResult> Settings()
     {
-        var model = new SettingsViewModel
+        try
         {
-            Profile = new UserProfile
-            {
-                FullName = "John Doe",
-                Email = "john.doe@tradexpro.com",
-                Phone = "+1 (555) 234-5678",
-                Timezone = "Eastern Time (UTC-5)",
-                Currency = "USD",
-                AccountType = "Premium",
-                MemberSince = new DateTime(2023, 3, 15)
-            },
+            var model = await _api.GetAsync<SettingsViewModel>("api/dashboard/settings");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Settings, using fallback"); }
+
+        var fallback = new SettingsViewModel
+        {
+            Profile = new UserProfile { FullName = "John Doe", Email = "john.doe@tradexpro.com", Phone = "+1 (555) 234-5678", Timezone = "Eastern Time (UTC-5)", Currency = "USD", AccountType = "Premium", MemberSince = new DateTime(2023, 3, 15) },
             Security = new SecuritySettings
             {
-                TwoFactorEnabled = true,
-                TwoFactorMethod = "Authenticator App",
-                LastPasswordChange = new DateTime(2025, 4, 10),
+                TwoFactorEnabled = true, TwoFactorMethod = "Authenticator App", LastPasswordChange = new DateTime(2025, 4, 10),
                 ActiveSessions = new List<LoginSession>
                 {
                     new() { Device = "Chrome on Windows", Location = "New York, US", IpAddress = "192.168.1.***", LastActive = DateTime.Now, IsCurrent = true },
@@ -233,36 +240,31 @@ public class HomeController : Controller
                     new() { Device = "Firefox on macOS", Location = "Boston, US", IpAddress = "172.16.0.***", LastActive = DateTime.Now.AddDays(-3), IsCurrent = false }
                 }
             },
-            Notifications = new NotificationSettings
-            {
-                EmailAlerts = true, PushNotifications = true, SmsAlerts = false,
-                PriceAlerts = true, OrderFills = true, MarketNews = true,
-                EarningsReports = true, PortfolioSummary = true, SummaryFrequency = "Daily"
-            },
+            Notifications = new NotificationSettings { EmailAlerts = true, PushNotifications = true, SmsAlerts = false, PriceAlerts = true, OrderFills = true, MarketNews = true, EarningsReports = true, PortfolioSummary = true, SummaryFrequency = "Daily" },
             ApiKeys = new List<ApiKey>
             {
                 new() { Name = "Trading Bot v2", KeyPrefix = "txp_live_8k2m....", Permissions = "Read, Trade", Created = new DateTime(2025, 1, 15), LastUsed = DateTime.Now.AddHours(-1), IsActive = true },
                 new() { Name = "Portfolio Tracker", KeyPrefix = "txp_live_3j9x....", Permissions = "Read Only", Created = new DateTime(2024, 11, 20), LastUsed = DateTime.Now.AddDays(-5), IsActive = true },
                 new() { Name = "Old Integration", KeyPrefix = "txp_live_1a4b....", Permissions = "Read, Trade", Created = new DateTime(2024, 6, 8), LastUsed = new DateTime(2024, 9, 1), IsActive = false }
             },
-            Display = new DisplaySettings
-            {
-                Theme = "Dark", ChartType = "Candlestick", DefaultTimeframe = "1H",
-                ShowVolume = true, ShowGrid = true, Language = "English",
-                DateFormat = "MMM dd, yyyy", NumberFormat = "1,234.56"
-            }
+            Display = new DisplaySettings { Theme = "Dark", ChartType = "Candlestick", DefaultTimeframe = "1H", ShowVolume = true, ShowGrid = true, Language = "English", DateFormat = "MMM dd, yyyy", NumberFormat = "1,234.56" }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult Alerts()
+
+    public async Task<IActionResult> Alerts()
     {
-        var model = new AlertsViewModel
+        try
         {
-            TotalActive = 8,
-            TriggeredToday = 2,
-            MaxAlerts = 50,
+            var model = await _api.GetAsync<AlertsViewModel>("api/dashboard/alerts");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Alerts, using fallback"); }
+
+        var fallback = new AlertsViewModel
+        {
+            TotalActive = 8, TriggeredToday = 2, MaxAlerts = 50,
             ActiveAlerts = new List<PriceAlert>
             {
                 new() { Id = 1, Symbol = "AAPL", CompanyName = "Apple Inc.", Condition = "Price Above", TargetPrice = 195.00m, CurrentPrice = 189.84m, Status = "Active", Created = new DateTime(2025, 5, 20), NotifyVia = "Email, Push", Notes = "Breakout level" },
@@ -281,25 +283,32 @@ public class HomeController : Controller
                 new() { Id = 103, Symbol = "COIN", CompanyName = "Coinbase Global", Condition = "% Change >", TargetPrice = 3.0m, CurrentPrice = 228.40m, Status = "Triggered", Created = new DateTime(2025, 5, 10), TriggeredAt = new DateTime(2025, 5, 25, 14, 18, 0), NotifyVia = "Email", Notes = "Crypto momentum" }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult News()
+
+    public async Task<IActionResult> News()
     {
-        var model = new NewsViewModel
+        try
+        {
+            var model = await _api.GetAsync<NewsViewModel>("api/dashboard/news");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for News, using fallback"); }
+
+        var fallback = new NewsViewModel
         {
             TrendingTopics = new List<string> { "AI", "Earnings", "Fed Rate", "Crypto", "EV", "Semiconductors" },
             LatestNews = new List<NewsArticle>
             {
-                new() { Id = 1, Title = "NVIDIA Surpasses Expectations with Record Q1 Revenue", Summary = "NVIDIA reported Q1 revenue of $26B, beating estimates by 12%. Data center segment drove growth with AI chip demand continuing to surge.", Source = "Reuters", Category = "Earnings", RelatedSymbols = new() { "NVDA", "AMD", "INTC" }, PublishedAt = DateTime.Now.AddMinutes(-15), Sentiment = "Bullish" },
-                new() { Id = 2, Title = "Federal Reserve Signals Potential Rate Cut in September", Summary = "Fed minutes reveal growing consensus for rate adjustment as inflation cools. Markets rally on dovish tone.", Source = "Bloomberg", Category = "Economy", RelatedSymbols = new() { "SPY", "QQQ", "TLT" }, PublishedAt = DateTime.Now.AddMinutes(-45), Sentiment = "Bullish" },
-                new() { Id = 3, Title = "Apple Unveils New AI Features at Developer Conference", Summary = "Apple Intelligence suite integrates across iPhone, Mac, and iPad. Partnership with OpenAI announced for advanced capabilities.", Source = "CNBC", Category = "Technology", RelatedSymbols = new() { "AAPL", "MSFT", "GOOGL" }, PublishedAt = DateTime.Now.AddHours(-2), Sentiment = "Bullish" },
-                new() { Id = 4, Title = "Tesla Faces Increased Competition in China Market", Summary = "BYD and NIO gain market share as Tesla's pricing strategy faces challenges in the world's largest EV market.", Source = "Financial Times", Category = "Automotive", RelatedSymbols = new() { "TSLA", "NIO", "LI" }, PublishedAt = DateTime.Now.AddHours(-3), Sentiment = "Bearish" },
-                new() { Id = 5, Title = "Microsoft Azure Revenue Grows 31% Year-over-Year", Summary = "Cloud division continues to outperform with AI services contributing significantly. Copilot adoption accelerates.", Source = "MarketWatch", Category = "Earnings", RelatedSymbols = new() { "MSFT", "AMZN", "GOOGL" }, PublishedAt = DateTime.Now.AddHours(-4), Sentiment = "Bullish" },
-                new() { Id = 6, Title = "Semiconductor Stocks Rally on Strong Demand Outlook", Summary = "Industry analysts upgrade forecasts citing AI infrastructure buildout. TSMC increases capex guidance.", Source = "Barron's", Category = "Semiconductors", RelatedSymbols = new() { "NVDA", "AMD", "AVGO", "TSM" }, PublishedAt = DateTime.Now.AddHours(-5), Sentiment = "Bullish" },
-                new() { Id = 7, Title = "Crypto Markets Surge as Bitcoin ETFs See Record Inflows", Summary = "Spot Bitcoin ETFs attracted $890M in single-day inflows. Institutional adoption continues to accelerate.", Source = "CoinDesk", Category = "Crypto", RelatedSymbols = new() { "COIN", "MSTR", "RIOT" }, PublishedAt = DateTime.Now.AddHours(-6), Sentiment = "Bullish" },
-                new() { Id = 8, Title = "Amazon Expands Same-Day Delivery to 50 New Markets", Summary = "Logistics investment paying off as delivery speed becomes key competitive advantage. Margins expected to improve.", Source = "WSJ", Category = "Retail", RelatedSymbols = new() { "AMZN", "WMT", "TGT" }, PublishedAt = DateTime.Now.AddHours(-8), Sentiment = "Neutral" }
+                new() { Id = 1, Title = "NVIDIA Surpasses Expectations with Record Q1 Revenue", Summary = "NVIDIA reported Q1 revenue of $26B, beating estimates by 12%.", Source = "Reuters", Category = "Earnings", RelatedSymbols = new() { "NVDA", "AMD", "INTC" }, PublishedAt = DateTime.Now.AddMinutes(-15), Sentiment = "Bullish" },
+                new() { Id = 2, Title = "Federal Reserve Signals Potential Rate Cut in September", Summary = "Fed minutes reveal growing consensus for rate adjustment as inflation cools.", Source = "Bloomberg", Category = "Economy", RelatedSymbols = new() { "SPY", "QQQ", "TLT" }, PublishedAt = DateTime.Now.AddMinutes(-45), Sentiment = "Bullish" },
+                new() { Id = 3, Title = "Apple Unveils New AI Features at Developer Conference", Summary = "Apple Intelligence suite integrates across iPhone, Mac, and iPad.", Source = "CNBC", Category = "Technology", RelatedSymbols = new() { "AAPL", "MSFT", "GOOGL" }, PublishedAt = DateTime.Now.AddHours(-2), Sentiment = "Bullish" },
+                new() { Id = 4, Title = "Tesla Faces Increased Competition in China Market", Summary = "BYD and NIO gain market share as Tesla's pricing strategy faces challenges.", Source = "Financial Times", Category = "Automotive", RelatedSymbols = new() { "TSLA", "NIO", "LI" }, PublishedAt = DateTime.Now.AddHours(-3), Sentiment = "Bearish" },
+                new() { Id = 5, Title = "Microsoft Azure Revenue Grows 31% Year-over-Year", Summary = "Cloud division continues to outperform with AI services contributing significantly.", Source = "MarketWatch", Category = "Earnings", RelatedSymbols = new() { "MSFT", "AMZN", "GOOGL" }, PublishedAt = DateTime.Now.AddHours(-4), Sentiment = "Bullish" },
+                new() { Id = 6, Title = "Semiconductor Stocks Rally on Strong Demand Outlook", Summary = "Industry analysts upgrade forecasts citing AI infrastructure buildout.", Source = "Barron's", Category = "Semiconductors", RelatedSymbols = new() { "NVDA", "AMD", "AVGO", "TSM" }, PublishedAt = DateTime.Now.AddHours(-5), Sentiment = "Bullish" },
+                new() { Id = 7, Title = "Crypto Markets Surge as Bitcoin ETFs See Record Inflows", Summary = "Spot Bitcoin ETFs attracted $890M in single-day inflows.", Source = "CoinDesk", Category = "Crypto", RelatedSymbols = new() { "COIN", "MSTR", "RIOT" }, PublishedAt = DateTime.Now.AddHours(-6), Sentiment = "Bullish" },
+                new() { Id = 8, Title = "Amazon Expands Same-Day Delivery to 50 New Markets", Summary = "Logistics investment paying off as delivery speed becomes key competitive advantage.", Source = "WSJ", Category = "Retail", RelatedSymbols = new() { "AMZN", "WMT", "TGT" }, PublishedAt = DateTime.Now.AddHours(-8), Sentiment = "Neutral" }
             },
             UpcomingEarnings = new List<EarningsEvent>
             {
@@ -310,17 +319,22 @@ public class HomeController : Controller
                 new() { Symbol = "AVGO", CompanyName = "Broadcom", Date = DateTime.Now.AddDays(5), Time = "After Market", EstEPS = 10.84m }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult Orders()
+
+    public async Task<IActionResult> Orders()
     {
-        var model = new OrdersViewModel
+        try
         {
-            TotalOpen = 4,
-            FilledToday = 3,
-            TotalVolume = 48250.60m,
+            var model = await _api.GetAsync<OrdersViewModel>("api/dashboard/orders");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Orders, using fallback"); }
+
+        var fallback = new OrdersViewModel
+        {
+            TotalOpen = 4, FilledToday = 3, TotalVolume = 48250.60m,
             OpenOrders = new List<Order>
             {
                 new() { OrderId = "ORD-28491", Symbol = "NVDA", Side = "Buy", OrderType = "Limit", Quantity = 5, FilledQty = 0, Price = 924.60m, LimitPrice = 910.00m, Status = "Open", TimeInForce = "GTC", CreatedAt = DateTime.Now.AddHours(-2) },
@@ -343,29 +357,24 @@ public class HomeController : Controller
                 new() { OrderId = "ORD-28485", Symbol = "SMCI", Side = "Buy", OrderType = "Limit", Quantity = 3, FilledQty = 0, Price = 924.80m, LimitPrice = 880.00m, Status = "Cancelled", TimeInForce = "Day", CreatedAt = DateTime.Now.AddDays(-1) }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult Account()
+
+    public async Task<IActionResult> Account()
     {
-        var model = new AccountViewModel
+        try
         {
-            TotalBalance = 124563.82m,
-            AvailableCash = 24120.42m,
-            MarginUsed = 15420.00m,
-            BuyingPower = 48240.84m,
-            AccountStatus = "Active",
-            AccountTier = "Premium",
-            Limits = new AccountLimits
-            {
-                DailyDeposit = 250000.00m,
-                DailyWithdrawal = 50000.00m,
-                MonthlyDeposit = 1000000.00m,
-                MonthlyWithdrawal = 200000.00m,
-                DayTradesRemaining = 3,
-                MarginLimit = 100000.00m
-            },
+            var model = await _api.GetAsync<AccountViewModel>("api/dashboard/account");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Account, using fallback"); }
+
+        var fallback = new AccountViewModel
+        {
+            TotalBalance = 124563.82m, AvailableCash = 24120.42m, MarginUsed = 15420.00m,
+            BuyingPower = 48240.84m, AccountStatus = "Active", AccountTier = "Premium",
+            Limits = new AccountLimits { DailyDeposit = 250000.00m, DailyWithdrawal = 50000.00m, MonthlyDeposit = 1000000.00m, MonthlyWithdrawal = 200000.00m, DayTradesRemaining = 3, MarginLimit = 100000.00m },
             LinkedAccounts = new List<BankAccount>
             {
                 new() { BankName = "Chase Bank", AccountLast4 = "4821", AccountType = "Checking", IsDefault = true, IsVerified = true },
@@ -383,13 +392,20 @@ public class HomeController : Controller
                 new() { TransactionId = "TXN-89405", Type = "Deposit", Amount = 15000.00m, Status = "Pending", Date = DateTime.Now, Description = "ACH Transfer (Processing)", Method = "Bank Transfer" }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
-    public IActionResult Screener()
+
+    public async Task<IActionResult> Screener()
     {
-        var model = new ScreenerViewModel
+        try
+        {
+            var model = await _api.GetAsync<ScreenerViewModel>("api/dashboard/screener");
+            if (model != null) return View(model);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "API unavailable for Screener, using fallback"); }
+
+        var fallback = new ScreenerViewModel
         {
             TotalResults = 42,
             Filters = new ScreenerFilters { Sector = "All", SortBy = "MarketCap", SortDirection = "Desc" },
@@ -414,8 +430,7 @@ public class HomeController : Controller
                 new() { Symbol = "JNJ", CompanyName = "Johnson & Johnson", Sector = "Healthcare", Price = 152.80m, Change = 0.42m, ChangePercent = 0.28m, Volume = "6.4M", MarketCap = "$369B", PERatio = 22.4m, DividendYield = 3.14m, Week52High = 168.85m, Week52Low = 143.13m, Rating = "Hold" }
             }
         };
-
-        return View(model);
+        return View(fallback);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

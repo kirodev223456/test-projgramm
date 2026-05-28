@@ -81,7 +81,7 @@
                         <td>
                             <div class="alert-actions">
                                 <button class="btn-icon" title="Edit">&#9998;</button>
-                                <button class="btn-icon btn-icon-danger" title="Delete">&#10005;</button>
+                                <button class="btn-icon btn-icon-danger" title="Delete" data-delete-btn data-delete-message="Delete this alert for @alert.Symbol?">&#10005;</button>
                             </div>
                         </td>
                     </tr>
@@ -176,7 +176,7 @@
         <label>Notes (optional)</label>
         <input type="text" placeholder="Add a note..." />
     </div>
-    <button class="btn-order" style="margin-top:12px;">Create Alert</button>
+    <button class="btn-order" style="margin-top:12px;" data-save-btn>Create Alert</button>
 
     <!-- Alert Tips -->
     <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
